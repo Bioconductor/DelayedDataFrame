@@ -1,0 +1,22 @@
+5/11/2018, review code with Herve & Daniel:
+
+## DelayedDataFrame code polish. 
+- stand-alone package? convenient. 
+- check colnames for DDF construction. 
+- extractCOLS...  (forked from S4Vectors to Liubuntu, will test)
+
+## think of SimpleList as rectangular!
+
+## bugs in pkg: methods
+package attributes stripped with [[, and as.list()
+
+## further implementation in S4Vectors
+acbind/arbind
+
+## future new features to implement 
+- Michaels comments: https://github.com/Bioconductor/VariantExperiment/issues/3#issuecomment-387192874
+- Herve: SNPlocks, Gpos? on-disk long table? SQL...
+- relational/algebra? DataFrame S4 replacement or ordinary data.frame.
+
+
+
