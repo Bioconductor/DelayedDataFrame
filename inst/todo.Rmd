@@ -1,9 +1,14 @@
 5/11/2018, review code with Herve & Daniel:
 
 ## DelayedDataFrame code polish. 
-- stand-alone package? convenient. 
+- stand-alone package? convenient.   -- done!
 - check colnames for DDF construction. 
 - extractCOLS...  (forked from S4Vectors to Liubuntu, will test)
+- concatenateObject renamed as "bindROWS" in S4Vectors 0.19.5. Need to modify the original "concatenateObject,LazyIndex" (intended for cbind of DDF, to update listData slot for all columns) into "bindROWS,LazyIndex" for only binding rows (listData). Check "bindROWS" for objects defined in S4Vectors to see if any major changes..
+  -- the new "bindROWS" function which replaces the "concatenateObjects" now works for no-dim objects (vectors, factors, lists), 1-dim arrays, 2-dim objects (DelayedArray, DataFrame, data.frame, matrix, arrays...) and >2-dim objects. After "bindROWS", it returns objects of the same class of input value. For 2D objects, it calls "base::rbind". 
+  -- todo: test DF with meaningful lazyIndex. and try rbind(). Basically just "callNextMethod()" would work. Inside "bindROWS,DataFrame", it realized the listData by calling "[[]]" when "bind\_cols\_along\_their\_ROWS". So we should discard the old "lazyIndex" and assign "NULL" for all columns. "LazyIndex(vector("list", 1), rep(1L, ncol(x)))"  -- done! rbind and cbind construct a new DDF with initial NULL as lazyIndex. 
+  -- todo: debug "test_DelayedDataFrame". 1D DelayedArray subsetting in last test. 
+
 
 ## think of SimpleList as rectangular!
 
@@ -19,4 +24,9 @@ acbind/arbind
 - relational/algebra? DataFrame S4 replacement or ordinary data.frame.
 
 
+## todo: 
+1. understand the "bindROWS" functions in S4Vectors. 
+2. implement "bindROWS" for "DelayedDataFrame".
+3. implement "bindROWS" for "LazyIndex".
+4. modify the old "concatenateObjects, LazyIndex" into "bindCOLS, LazyIndex". 
 

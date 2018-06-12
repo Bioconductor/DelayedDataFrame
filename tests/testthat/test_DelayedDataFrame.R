@@ -298,29 +298,29 @@ test_that("rbind,DelayedDataFrame works", {
     expect_equivalent(obj, rbind(obj[1:10,], obj[11:26,]))
 })
 
-test_that("arbind,DelayedDataFrame works", {
-    da0 <- DelayedArray(array(1:26, 26))
-    da1 <- DelayedArray(matrix(1:26, 26, 1))
-    da2 <- DelayedArray(matrix(1:52, 26, 2))
-    da3 <- DelayedArray(array(1:26, c(26, 1, 1)))
-    obj <- DelayedDataFrame(
-        letters, da0 = I(da0), da1=I(da1), da2=I(da2), da3 = I(da3)
-    )
+## test_that("arbind,DelayedDataFrame works", {
+##     da0 <- DelayedArray(array(1:26, 26))
+##     da1 <- DelayedArray(matrix(1:26, 26, 1))
+##     da2 <- DelayedArray(matrix(1:52, 26, 2))
+##     da3 <- DelayedArray(array(1:26, c(26, 1, 1)))
+##     obj <- DelayedDataFrame(
+##         letters, da0 = I(da0), da1=I(da1), da2=I(da2), da3 = I(da3)
+##     )
 
-    expect_equivalent(obj, arbind(obj[1:10,], obj[11:26,]))
-})
+##     expect_equivalent(obj, arbind(obj[1:10,], obj[11:26,]))
+## })
 
-test_that("acbind,DelayedDataFrame works", {
-    da0 <- DelayedArray(array(1:26, 26))
-    da1 <- DelayedArray(matrix(1:26, 26, 1))
-    da2 <- DelayedArray(matrix(1:52, 26, 2))
-    da3 <- DelayedArray(array(1:26, c(26, 1, 1)))
-    obj <- DelayedDataFrame(
-        letters, da0 = I(da0), da1=I(da1), da2=I(da2), da3 = I(da3)
-    )
+## test_that("acbind,DelayedDataFrame works", {
+##     da0 <- DelayedArray(array(1:26, 26))
+##     da1 <- DelayedArray(matrix(1:26, 26, 1))
+##     da2 <- DelayedArray(matrix(1:52, 26, 2))
+##     da3 <- DelayedArray(array(1:26, c(26, 1, 1)))
+##     obj <- DelayedDataFrame(
+##         letters, da0 = I(da0), da1=I(da1), da2=I(da2), da3 = I(da3)
+##     )
 
-    expect_equivalent(obj, acbind(obj[1:10,], obj[11:26,]))
-})
+##     expect_equivalent(obj, acbind(obj[1:10,], obj[11:26,]))
+## })
 
 test_that("concatenateObjects,DelayedDataFrame works", {
     da1 <- DelayedArray(matrix(1:26, 26, 1))
@@ -376,5 +376,5 @@ test_that("lazyIndex<-,DelayedDataFrame works", {
     idx <- sample(10)
     lazyIndex(obj) <- LazyIndex(list(idx), rep(1L,2))
     expect_identical(obj[[1]], letters[idx])
-    expect_equivalent(obj[[2]], da1[1:10,][idx,])  ## 'package' attribute stripped
+    expect_identical(obj[[2]], da0[1:10, drop=FALSE][idx, drop=FALSE])
 })

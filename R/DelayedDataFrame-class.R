@@ -69,6 +69,7 @@ setMethod("lazyIndex", "DelayedDataFrame", function(x) x@lazyIndex)
 ###-------------
 ## methods
 ###-------------
+### the "as.list", "cbind", "rbind(a thin wrapper of bindROWS)" will realize all lazyIndexes and construct a new DelayedDataFrame (with initial lazyIndex of NULL). 
 
 setMethod("getListElement", "DelayedDataFrame", function(x, i, exact=TRUE)
 {
@@ -99,18 +100,20 @@ setMethod("names", "DelayedDataFrame", function(x)
     names(x@listData)
 })
 
-## FIXME: GDSArray coerced into character vector...
-## setMethod("rbind", "DelayedDataFrame", function(..., deparse.level=1)
-## {
-##     DelayedDataFrame(callNextMethod())
-## })
-
 setMethod("cbind", "DelayedDataFrame", function(..., deparse.level=1)
 {
     df <- callNextMethod()
     DelayedDataFrame(df)
 })
 
+setMethod(
+    "bindROWS", "DelayedDataFrame",
+    function(x, objects = list(), use.names = TRUE, ignore.mcols = FALSE, check = TRUE)
+{
+    ans <- callNextMethod()
+    lazyIndex(ans) <- LazyIndex(vector("list", 1), rep(1L, ncol(x)))
+    ans
+})
 
 ###-------------
 ### Coercion
@@ -199,6 +202,7 @@ setValidity2("DelayedDataFrame", .validate_DelayedDataFrame)
         x, lazyIndex = lazyIndex(x)[i,], nrows = length(i), rownames = rownames
     )
 }
+#' @importFrom stats setNames
 #' @exportMethod extractROWS
 #' @aliases extractROWS,DelayedDataFrame-method
 #' @rdname DelayedDataFrame-class
@@ -220,6 +224,7 @@ setReplaceMethod(
     callNextMethod()
 })
 
+#' @importFrom stats setNames
 #' @importFrom methods callNextMethod
 #' @exportMethod [
 #' @aliases [,DelayedDataFrame-method
@@ -273,19 +278,6 @@ setMethod("[", c("DelayedDataFrame", "ANY", "ANY", "ANY"),
             return(as(x, "list"))
     }
     x
-})
-
-## constructing a new DelayedDataFrame
-setMethod(
-    "concatenateObjects", "DelayedDataFrame",
-    function(x, objects = list(), use.names = TRUE, ignore.mcols = FALSE, check = TRUE)
-{
-    for (i in seq_len(length(objects))) {
-        y <- as(objects[[i]], "DelayedDataFrame")
-        lazyIndex(x) <- c(lazyIndex(x), lazyIndex(y))
-    }
-    ## validObject(x) ## ncol(x) != .index(lazyIndex(x))
-    callNextMethod()
 })
 
 ###--------------

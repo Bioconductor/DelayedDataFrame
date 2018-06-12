@@ -80,6 +80,8 @@ test_that("[ subsetting for LazyIndex works", {
     expect_identical(exp, ll[2])
 })
 
+### The "c,LazyIndex" works as intended, but it is not being called
+### for "DelayedDataFrame", will only keep for potential usage later.
 test_that("concatenateObjects for LazyIndex works", {
     ll <- LazyIndex(list(1:10, NULL), index=1:2)
 

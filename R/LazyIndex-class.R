@@ -47,8 +47,18 @@ setValidity2("LazyIndex", .validate_LazyIndex)
     uniqLen[uniqLen != 0]
 }
 
+### Arguments 'ignore.mcols' and 'check' are ignored. Although we have
+### "bindROWS,LazyIndex" implemented, and so the "c,lazyIndex" works,
+### but it is not used in the "DelayedDataFrame". Will keep now for
+### any potential usage later.
+#' bindROWS 
+#' @name bindROWS
+#' @rdname LazyIndex-class
+#' @aliases bindCOLS,LazyIndex-class
 #' @importFrom methods slot
-setMethod("concatenateObjects", "LazyIndex",
+#' @importFrom utils head
+#' 
+setMethod("bindROWS", "LazyIndex",
           function(x, objects=list(), use.names = TRUE,
                    ignore.mcols = FALSE, check = TRUE)
 {
@@ -66,6 +76,7 @@ setMethod("concatenateObjects", "LazyIndex",
     .lazyIndex_compose(listData, index)
 })
 
+#' @importFrom stats setNames
 setMethod("[", c("LazyIndex", "ANY"),
     function(x, i, j, ..., drop = TRUE)
 {
