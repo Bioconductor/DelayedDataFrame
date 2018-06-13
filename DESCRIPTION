@@ -1,6 +1,6 @@
 Package: DelayedDataFrame
 Title: Delayed operation on DataFrame with lazyIndex for each columns, using
-    standard DataFrame metaphor.
+    standard DataFrame metaphor
 Version: 0.1.0
 Authors@R: c(
     person(
@@ -26,4 +26,5 @@ Suggests:
 Collate:
     LazyIndex-class.R
     DelayedDataFrame-class.R
+    DelayedDataFrame-method.R
 

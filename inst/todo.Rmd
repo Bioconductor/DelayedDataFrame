@@ -7,7 +7,23 @@
 - concatenateObject renamed as "bindROWS" in S4Vectors 0.19.5. Need to modify the original "concatenateObject,LazyIndex" (intended for cbind of DDF, to update listData slot for all columns) into "bindROWS,LazyIndex" for only binding rows (listData). Check "bindROWS" for objects defined in S4Vectors to see if any major changes..
   -- the new "bindROWS" function which replaces the "concatenateObjects" now works for no-dim objects (vectors, factors, lists), 1-dim arrays, 2-dim objects (DelayedArray, DataFrame, data.frame, matrix, arrays...) and >2-dim objects. After "bindROWS", it returns objects of the same class of input value. For 2D objects, it calls "base::rbind". 
   -- todo: test DF with meaningful lazyIndex. and try rbind(). Basically just "callNextMethod()" would work. Inside "bindROWS,DataFrame", it realized the listData by calling "[[]]" when "bind\_cols\_along\_their\_ROWS". So we should discard the old "lazyIndex" and assign "NULL" for all columns. "LazyIndex(vector("list", 1), rep(1L, ncol(x)))"  -- done! rbind and cbind construct a new DDF with initial NULL as lazyIndex. 
-  -- todo: debug "test_DelayedDataFrame". 1D DelayedArray subsetting in last test. 
+  -- todo: debug "test\_DelayedDataFrame". 1D DelayedArray subsetting in last test. -- asked Herve in slack#questions. 
+  -- todo: debug "test\_DelayedDataFrame". constructor. "concatenateObjects,DDF"...
+	  "cbind,DataFrame" calls "DataFrame()" constructor. maybe we should set "cbind,DDF" to call "DelayedDataFrame()" constructor, where if all inputs are DDF, they will concatenate the existing lazyIndex's and concatenate the listData. 
+  -- todo: debug "test\_DelayedDataFrame", "[[<-".
+  
+-- meeting with Martin/Herve for the "cbind" performance in "DDF". Now "rbind" realizes the lazyIndex. how about "cbind". should we call "DDF()" constructor, where check inputs if all DDF, then "concatenateObject,LazyInde"? or call "cbind,DF" and reconstruct a DDF?  
+for "c" calls "do.call(cbind, list(objects))", calls "DataFrame()" constructor. 
+Am doing DelayedDataFrame() constructor calls cbind (if inputs are all DDF) / DataFrame() constructor for general inputs. `cbind, DDF` combines the lazyIndex and do not incur realization. So it would be "c,DDF">>"cbind,DDF"(no realization). Now `cbind,DDF` works as intended, need to make the `DDF(DDF inputs)` work. Environment difference: https://devteam-bioc.slack.com/archives/G7KH1498U/p1528903667000847 
+- If "cbind,DelayedDataFrame" realize and construct a new DDF, there would be no problem with the test functions for "constructor" and "[[<-"
+- cbind(DDF, DF) returns what? cbind(DDF) calls `DelayedDataFrame()` constructor. rename the current `cbind,DDF` as something else? `cbind,DDF` calls `DDF()` and `cbind,DF` calls `DF()`, returns warning message:
+
+```
+In methods:::.selectDotsMethod(classes, .MTable, .AllMTable) :
+  multiple direct matches: "DelayedDataFrame", "DataFrame"; using the first of these
+```
+
+- wait for Herve or Martin's reply on slack. If they agree with "cbind,DDF" do not realize, would set up a meeting with Herve for some bugs above. 
 
 
 ## think of SimpleList as rectangular!

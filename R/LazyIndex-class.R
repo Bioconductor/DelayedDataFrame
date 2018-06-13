@@ -35,7 +35,6 @@ LazyIndex <-
     if (length(msg)) msg else TRUE
 }
 
-#' @importFrom S4Vectors setValidity2
 setValidity2("LazyIndex", .validate_LazyIndex)
 
 .fulllength <- function(x) {  ## dim(), rectangular., concatenateObject (works as cbind)
@@ -57,7 +56,7 @@ setValidity2("LazyIndex", .validate_LazyIndex)
 #' @aliases bindCOLS,LazyIndex-class
 #' @importFrom methods slot
 #' @importFrom utils head
-#' 
+
 setMethod("bindROWS", "LazyIndex",
           function(x, objects=list(), use.names = TRUE,
                    ignore.mcols = FALSE, check = TRUE)

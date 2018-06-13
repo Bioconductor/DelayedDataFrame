@@ -6,6 +6,7 @@
 #' @name DelayedDataFrame
 #' @exportClass DelayedDataFrame
 #' @importFrom methods as initialize is new "slot<-"
+#' @import DelayedArray
 #' @aliases DelayedDataFrame-class
 #' @description The \code{DelayedDataFrame} class extends the
 #'     \code{DataFrame} class and supports the storage of any type of
@@ -38,19 +39,51 @@
     .listData(lazyIndex(x))[[j]]
 }
 
+### if inputs are all DDF, cbind will concatenate the old lazyIndexes and listData. 
+.cbindDDF <- function(..., deparse.level = 1)
+{
+    ## browser(); browser()
+    objects <- list(...)
+    x <- objects[[1]]
+    objects <- objects[-1]
+    lazyIndex_objects <- lapply(objects, lazyIndex)
+    new_lazyIndex <- bindROWS(lazyIndex(x), lazyIndex_objects)
+    listData_objects <- c()
+    for (i in seq_along(objects)) {
+        listData_objects <- c(listData_objects, objects[[i]]@listData)
+    }
+    new_listData <- c(x@listData, listData_objects)
+    ## rownames, nrows
+    ans <- initialize(x, listData = new_listData, lazyIndex = new_lazyIndex)
+    ans
+    ## for (i in seq_len(length(objects))) {
+    ##     y <- as(objects[[i]], "DelayedDataFrame")
+    ##     y <- objects[[i]]
+    ##     lazyIndex(x) <- bindROWS(lazyIndex(x), lazyIndex(y))
+    ## }
+    ## validObject(x) ## ncol(x) != .index(lazyIndex(x))
+    ## callNextMethod()
+}
+
 ###-------------
 ## constructor
 ###-------------
 
+### For \code{DelayedDataFrame} constructor, If the inputs are all
+### DelayedDataFrame, will concatenate all existing lazyIndex's and
+### cbind for listData.
 #' @export DelayedDataFrame
+#' @import S4Vectors
 #' @aliases DelayedDataFrame
 #' @rdname DelayedDataFrame-class
 DelayedDataFrame <- function(..., row.names=NULL, check.names=TRUE)
 {
+    ## browser()
     listData <- list(...)
     isDDF <- vapply(unname(listData), is, logical(1), "DelayedDataFrame")
     if (length(isDDF) && all(isDDF)) {
-        ddf <- concatenateObjects(listData[[1]], listData[-1])
+        ## ddf <- concatenateObjects(listData[[1]], listData[-1])
+        ddf <- do.call(.cbindDDF, listData)  ## FIXME: returns a DF... 
     } else {
         df <- DataFrame(..., row.names=row.names, check.names=check.names)
         ddf <- as(df, "DelayedDataFrame")
@@ -67,55 +100,6 @@ setGeneric("lazyIndex", function(x) standardGeneric("lazyIndex"), signature="x")
 setMethod("lazyIndex", "DelayedDataFrame", function(x) x@lazyIndex)
 
 ###-------------
-## methods
-###-------------
-### the "as.list", "cbind", "rbind(a thin wrapper of bindROWS)" will realize all lazyIndexes and construct a new DelayedDataFrame (with initial lazyIndex of NULL). 
-
-setMethod("getListElement", "DelayedDataFrame", function(x, i, exact=TRUE)
-{
-    i2 <- normalizeDoubleBracketSubscript(
-        i, x, exact = exact,
-        allow.NA = TRUE,
-        allow.nomatch = TRUE)
-    if (is.na(i2)) 
-        return(NULL)
-    index <- .get_index(x, i2)
-    elt <- x@listData[[i2]]
-    if (!is.null(index))
-        elt <- extractROWS(elt, index)
-    elt
-})
-
-## "as.list" function is called in lapply("DelayedDataFrame", ) and names("DelayedDataFrame")...
-setMethod("as.list", "DelayedDataFrame", function(x, use.names=TRUE)  
-{
-    ans <- lapply(seq_along(x), function(j) x[[j]])
-    if (use.names)
-        names(ans) <- names(x)
-    ans
-})
-
-setMethod("names", "DelayedDataFrame", function(x)
-{
-    names(x@listData)
-})
-
-setMethod("cbind", "DelayedDataFrame", function(..., deparse.level=1)
-{
-    df <- callNextMethod()
-    DelayedDataFrame(df)
-})
-
-setMethod(
-    "bindROWS", "DelayedDataFrame",
-    function(x, objects = list(), use.names = TRUE, ignore.mcols = FALSE, check = TRUE)
-{
-    ans <- callNextMethod()
-    lazyIndex(ans) <- LazyIndex(vector("list", 1), rep(1L, ncol(x)))
-    ans
-})
-
-###-------------
 ### Coercion
 ###-------------
 
@@ -128,7 +112,7 @@ setMethod(
 #' @exportMethod coerce
 #' @aliases coerce,DataFrame,DelayedDataFrame-method
 #' @rdname DelayedDataFrame-class
-#' @param from a \code{DataFrame} object
+## #' @param from a \code{DataFrame}, \code{DelayedDataFrame}, or \code{ANY} object.
 setAs("DataFrame", "DelayedDataFrame", function(from)
 {
     if (identical(dim(from), c(0L, 0L))) {
@@ -167,6 +151,25 @@ setAs("ANY", "DelayedDataFrame", function(from){
     as(df, "DelayedDataFrame")
 })
 
+###--------------
+## slot setters
+###--------------
+
+#' @exportMethod "lazyIndex<-"
+#' @rdname DelayedDataFrame-class
+setGeneric(
+    "lazyIndex<-",
+    function(x, value) standardGeneric("lazyIndex<-"),
+    signature="x")
+
+#' @description the setter for the \code{lazyIndex} slot of \code{DelayedDataFrame} object.
+#' @param x the \code{DelayedDataFrame} object.
+#' @param value the new value of \code{lazyIndex} slot for \code{DelayedDataFrame} object.
+#' @return the \code{DelayedDataFrame} object with new value of \code{lazyIndex} slot.
+setReplaceMethod( "lazyIndex", "DelayedDataFrame", function(x, value) {
+    BiocGenerics:::replaceSlots(x, lazyIndex=value, check=FALSE)
+})
+
 ###-----------------
 ## validity check
 ###----------------
@@ -183,118 +186,5 @@ setAs("ANY", "DelayedDataFrame", function(from){
     if (length(msg)) msg else TRUE
 }
 
-#' @importFrom S4Vectors setValidity2
 setValidity2("DelayedDataFrame", .validate_DelayedDataFrame)
-
-###-----------------
-## subsetting
-###----------------
-#' @importFrom methods slot
-.extractROWS_DelayedDataFrame <- function(x, i)
-{
-    i <- normalizeSingleBracketSubscript(
-        i, x, exact = FALSE, allow.NAs = TRUE, as.NSBS = FALSE)
-    rownames <- rownames(x)[i]
-    if (!is.null(rownames))
-        rownames <- make.unique(rownames)
-
-    initialize(
-        x, lazyIndex = lazyIndex(x)[i,], nrows = length(i), rownames = rownames
-    )
-}
-#' @importFrom stats setNames
-#' @exportMethod extractROWS
-#' @aliases extractROWS,DelayedDataFrame-method
-#' @rdname DelayedDataFrame-class
-setMethod("extractROWS", "DelayedDataFrame", .extractROWS_DelayedDataFrame)
-
-setReplaceMethod(
-    "[", c("DelayedDataFrame", "ANY"),
-    function(x, i, j, ..., value)
-{
-    xstub <- setNames(seq_along(x), names(x))
-    if (missing(j)) {
-        i <- normalizeSingleBracketSubscript(i, xstub)
-        lazyIndex(x) <- .update_index(lazyIndex(x), i, NULL)
-    } else {
-        j <- normalizeSingleBracketSubscript(j, xstub)
-        x@listData[j] <- lapply(j, function(j, x) x[[j]], x)
-        lazyIndex(x) <- .update_index(lazyIndex(x), j, NULL)
-    }
-    callNextMethod()
-})
-
-#' @importFrom stats setNames
-#' @importFrom methods callNextMethod
-#' @exportMethod [
-#' @aliases [,DelayedDataFrame-method
-#' @rdname DelayedDataFrame-class
-#' @param x input
-#' @param i row subscript
-#' @param j col subscript
-#' @param drop if drop with reduced dimension, default is TRUE.
-#' @param row.names rownames
-#' @param check.names if check names.
-#' @param ... other arguments to pass.
-
-setMethod("[", c("DelayedDataFrame", "ANY", "ANY", "ANY"),
-          function (x, i, j, ..., drop = TRUE) 
-{
-    if (!isTRUEorFALSE(drop)) 
-        stop("'drop' must be TRUE or FALSE")
-    if (length(list(...)) > 0L) 
-        warning("parameters in '...' not supported")
-    list_style_subsetting <- (nargs() - (!missing(drop))) < 3L
-    if (list_style_subsetting || !missing(j)) {
-        if (list_style_subsetting) {
-            if (!missing(drop)) 
-                warning("'drop' argument ignored by list-style subsetting")
-            if (missing(i)) 
-                return(x)
-            j <- i
-        }
-        if (!is(j, "IntegerRanges")) {
-            xstub <- setNames(seq_along(x), names(x))
-            j <- normalizeSingleBracketSubscript(j, xstub)
-        }
-        x <- initialize(
-            x, lazyIndex = lazyIndex(x)[j], listData = extractROWS(x@listData, j),
-            elementMetadata = extractROWS(mcols(x), j)
-        )
-        if (anyDuplicated(names(x))) 
-            names(x) <- make.unique(names(x))
-        if (list_style_subsetting) 
-            return(x)
-    }
-    if (!missing(i)) {
-        x <- extractROWS(x, i)
-    }
-    if (missing(drop)) 
-        drop <- ncol(x) == 1L
-    if (drop) {
-        if (ncol(x) == 1L) 
-            return(x[[1L]])
-        if (nrow(x) == 1L) 
-            return(as(x, "list"))
-    }
-    x
-})
-
-###--------------
-## slot setters
-###--------------
-
-## replace method for lazyIndex(DDF)
-setGeneric(
-    "lazyIndex<-",
-    function(x, value) standardGeneric("lazyIndex<-"),
-    signature="x")
-
-#' @exportMethod "lazyIndex<-"
-#' @rdname DelayedDataFrame-class
-#' @description the setter for the \code{lazyIndex} slot of \code{DelayedDataFrame} object.
-#' @return the new value of \code{lazyIndex} slot for \code{DelayedDataFrame} object.
-setReplaceMethod( "lazyIndex", "DelayedDataFrame", function(x, value) {
-    BiocGenerics:::replaceSlots(x, lazyIndex=value, check=FALSE)
-})
 
