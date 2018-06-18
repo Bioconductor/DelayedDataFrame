@@ -4,17 +4,18 @@
 - stand-alone package? convenient.   -- done!
 - check colnames for DDF construction. 
 - extractCOLS...  (forked from S4Vectors to Liubuntu, will test)
-- concatenateObject renamed as "bindROWS" in S4Vectors 0.19.5. Need to modify the original "concatenateObject,LazyIndex" (intended for cbind of DDF, to update listData slot for all columns) into "bindROWS,LazyIndex" for only binding rows (listData). Check "bindROWS" for objects defined in S4Vectors to see if any major changes..
-  -- the new "bindROWS" function which replaces the "concatenateObjects" now works for no-dim objects (vectors, factors, lists), 1-dim arrays, 2-dim objects (DelayedArray, DataFrame, data.frame, matrix, arrays...) and >2-dim objects. After "bindROWS", it returns objects of the same class of input value. For 2D objects, it calls "base::rbind". 
-  -- todo: test DF with meaningful lazyIndex. and try rbind(). Basically just "callNextMethod()" would work. Inside "bindROWS,DataFrame", it realized the listData by calling "[[]]" when "bind\_cols\_along\_their\_ROWS". So we should discard the old "lazyIndex" and assign "NULL" for all columns. "LazyIndex(vector("list", 1), rep(1L, ncol(x)))"  -- done! rbind and cbind construct a new DDF with initial NULL as lazyIndex. 
-  -- todo: debug "test\_DelayedDataFrame". 1D DelayedArray subsetting in last test. -- asked Herve in slack#questions. 
+- concatenateObject renamed as "bindROWS" in S4Vectors 0.19.5. Need to rename "concatenateObject,LazyIndex" (intended for cbind of DDFs, to bind the lazyList for all columns, so that could concatenate the original listData without realization) into "bindROWS,LazyIndex". -- done!
+  -- `S4Vectors::bindROWS`. the new "bindROWS" function which replaces the "concatenateObjects" now works for no-dim objects (vectors, factors, lists), 1-dim arrays, 2-dim objects (DelayedArray, DataFrame, data.frame, matrix, arrays...) and >2-dim objects. After "bindROWS", it returns objects of the same class of input value. For 2D objects, it calls "base::rbind". 
+  -- todo: test DF with meaningful lazyIndex. and try rbind(). Basically just "callNextMethod()" would work. Inside "bindROWS,DataFrame", it realized the listData by calling "[[]]" when "bind\_cols\_along\_their\_ROWS". So we should discard the old "lazyIndex" and assign "NULL" for all columns. "LazyIndex(vector("list", 1), rep(1L, ncol(x)))"  -- done! rbind construct a new DDF with initial NULL as lazyIndex. 
+  -- done! debug "test\_DelayedDataFrame". 1D DelayedArray subsetting in last test. -- asked Herve in slack#questions. refer to "https://github.com/Bioconductor/DelayedArray/issues/6#issue" for discussion of `drop` default value. 
+  
   -- todo: debug "test\_DelayedDataFrame". constructor. "concatenateObjects,DDF"...
 	  "cbind,DataFrame" calls "DataFrame()" constructor. maybe we should set "cbind,DDF" to call "DelayedDataFrame()" constructor, where if all inputs are DDF, they will concatenate the existing lazyIndex's and concatenate the listData. 
-  -- todo: debug "test\_DelayedDataFrame", "[[<-".
+  -- done! debug "test\_DelayedDataFrame", "[[<-".
   
 -- meeting with Martin/Herve for the "cbind" performance in "DDF". Now "rbind" realizes the lazyIndex. how about "cbind". should we call "DDF()" constructor, where check inputs if all DDF, then "concatenateObject,LazyInde"? or call "cbind,DF" and reconstruct a DDF?  
 for "c" calls "do.call(cbind, list(objects))", calls "DataFrame()" constructor. 
-Am doing DelayedDataFrame() constructor calls cbind (if inputs are all DDF) / DataFrame() constructor for general inputs. `cbind, DDF` combines the lazyIndex and do not incur realization. So it would be "c,DDF">>"cbind,DDF"(no realization). Now `cbind,DDF` works as intended, need to make the `DDF(DDF inputs)` work. Environment difference: https://devteam-bioc.slack.com/archives/G7KH1498U/p1528903667000847 
+Am doing DelayedDataFrame() constructor calls cbind (if inputs are all DDF) / DataFrame() constructor for general inputs. `cbind, DDF` combines the lazyIndex and do not incur realization. So it would be "c,DDF">>"cbind,DDF"(no realization). Now `cbind,DDF` works as intended, need to make the `DDF(DDF inputs)` work. Environment difference: https://devteam-bioc.slack.com/archives/G7KH1498U/p1528903667000847 (need to import cbind generic from BiocGenerics!! )
 - If "cbind,DelayedDataFrame" realize and construct a new DDF, there would be no problem with the test functions for "constructor" and "[[<-"
 - cbind(DDF, DF) returns what? cbind(DDF) calls `DelayedDataFrame()` constructor. rename the current `cbind,DDF` as something else? `cbind,DDF` calls `DDF()` and `cbind,DF` calls `DF()`, returns warning message:
 
@@ -25,6 +26,24 @@ In methods:::.selectDotsMethod(classes, .MTable, .AllMTable) :
 
 - wait for Herve or Martin's reply on slack. If they agree with "cbind,DDF" do not realize, would set up a meeting with Herve for some bugs above. 
 
+### summary of meeting: 
+1. if `rbind,DDF` callNextMethod(), then it will incur realization automatically. Is it something we should expect DDF to do?   
+1. cbind,DDF incur realization? use case: adding new columns (realize) / cbind(DDF,DDF). 
+2. cbind(DDF,DF) returns what? need definition separately? because cbind functions are defined separately on DDF and DF. 
+3. What methods to export?  -- export all "setMethod()", "setReplaceMethod()". grep for "setAs()" to export. constructor to export. getters? NO. setters? NO. back-end function "lazyIndex<-" not to export to users. :::, str...
+explain the DDF working flow in manual, vignette, with examples. 
+
+as.list, names, extractROWS, coerce, [...
+OR as long as DDF is been depended by other package, there is no need to export methods? and they will be available automatically? What's the difference between export methods and export functions?? 
+
+-- todo: 
+1. rename "c,LazyIndex" into "cbind,LazyIndex". "bindROWS,LazyIndex"  -- done!
+2. cbind, coercion all objects into DDF. Do not need to define coercion of DDF to dDF with no-op because as() does not do the correct thing. 
+still need is(x,"DDF") to check if DDF. 
+DataFrame: c -- cbind -- DataFrame()
+DDF: c -- cbind -- .cbindDDF   -- done!
+DDF() -- cbind -- done!
+checkings?? cbind to make sure all DDF objects to have same nrows. otherwise, iterate atomic ... 
 
 ## think of SimpleList as rectangular!
 

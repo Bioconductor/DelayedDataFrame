@@ -391,5 +391,5 @@ test_that("lazyIndex<-,DelayedDataFrame works", {
     idx <- sample(10)
     lazyIndex(obj) <- LazyIndex(list(idx), rep(1L,2))
     expect_identical(obj[[1]], letters[idx])
-    expect_identical(obj[[2]], da0[1:10, drop=FALSE][idx, drop=FALSE])  ## FIXME, should not call "drop" for 1D DelayedArray subsetting all the time! 
+    expect_identical(obj[[2]], da0[1:10, drop=FALSE][idx, drop=FALSE])
 })

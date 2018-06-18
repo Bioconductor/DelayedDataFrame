@@ -39,31 +39,6 @@
     .listData(lazyIndex(x))[[j]]
 }
 
-### if inputs are all DDF, cbind will concatenate the old lazyIndexes and listData. 
-.cbindDDF <- function(..., deparse.level = 1)
-{
-    ## browser(); browser()
-    objects <- list(...)
-    x <- objects[[1]]
-    objects <- objects[-1]
-    lazyIndex_objects <- lapply(objects, lazyIndex)
-    new_lazyIndex <- bindROWS(lazyIndex(x), lazyIndex_objects)
-    listData_objects <- c()
-    for (i in seq_along(objects)) {
-        listData_objects <- c(listData_objects, objects[[i]]@listData)
-    }
-    new_listData <- c(x@listData, listData_objects)
-    ## rownames, nrows
-    ans <- initialize(x, listData = new_listData, lazyIndex = new_lazyIndex)
-    ans
-    ## for (i in seq_len(length(objects))) {
-    ##     y <- as(objects[[i]], "DelayedDataFrame")
-    ##     y <- objects[[i]]
-    ##     lazyIndex(x) <- bindROWS(lazyIndex(x), lazyIndex(y))
-    ## }
-    ## validObject(x) ## ncol(x) != .index(lazyIndex(x))
-    ## callNextMethod()
-}
 
 ###-------------
 ## constructor
@@ -82,8 +57,7 @@ DelayedDataFrame <- function(..., row.names=NULL, check.names=TRUE)
     listData <- list(...)
     isDDF <- vapply(unname(listData), is, logical(1), "DelayedDataFrame")
     if (length(isDDF) && all(isDDF)) {
-        ## ddf <- concatenateObjects(listData[[1]], listData[-1])
-        ddf <- do.call(.cbindDDF, listData)  ## FIXME: returns a DF... 
+        ddf <- do.call(cbind, listData)
     } else {
         df <- DataFrame(..., row.names=row.names, check.names=check.names)
         ddf <- as(df, "DelayedDataFrame")

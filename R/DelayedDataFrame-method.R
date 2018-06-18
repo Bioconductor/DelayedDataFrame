@@ -46,6 +46,30 @@ setMethod("names", "DelayedDataFrame", function(x)
     names(x@listData)
 })
 
+### if inputs are all DDF, cbind will concatenate the old lazyIndexes and listData. 
+#' @importMethodsFrom BiocGenerics cbind
+.cbind_DDF <- function(x, objects = list())
+{
+    ## browser()
+    lazyIndex_objects <- lapply(objects, lazyIndex)
+    new_lazyIndex <- .cbind_lazyIndex(lazyIndex(x), lazyIndex_objects)
+    listData_objects <- c()
+    for (i in seq_along(objects)) {
+        listData_objects <- c(listData_objects, objects[[i]]@listData)
+    }
+    new_listData <- c(x@listData, listData_objects)
+    ## rownames, nrows
+    ans <- initialize(x, listData = new_listData, lazyIndex = new_lazyIndex)
+    ans
+    ## for (i in seq_len(length(objects))) {
+    ##     y <- as(objects[[i]], "DelayedDataFrame")
+    ##     y <- objects[[i]]
+    ##     lazyIndex(x) <- bindROWS(lazyIndex(x), lazyIndex(y))
+    ## }
+    ## validObject(x) ## ncol(x) != .index(lazyIndex(x))
+    ## callNextMethod()
+}
+
 #' \code{cbind} for DelayedDataFrame inherits the lazyIndex's if
 #' inputs are all DelayedDataFrame. Otherwise, return a new
 #' DelayedDataFrame with NULL lazyIndexes.
@@ -55,13 +79,12 @@ setMethod("names", "DelayedDataFrame", function(x)
 #'     can be given as named arguments.
 #' @param deparse.level See ‘?base::cbind’ for a description of this argument.
 #' @aliases cbind,DelayedDataFrame-method
-
-setMethod("cbind", "DelayedDataFrame", function(..., deparse.level=1)
+setMethod("cbind", "DelayedDataFrame", function(..., deparse.level = 1)
 {
-    ## df <- callNextMethod()
-    ## DelayedDataFrame(df)
-    ## browser()
-    DelayedDataFrame(..., check.names = FALSE)
+    objects <- list(...)
+    x <- objects[[1]]
+    objects <- objects[-1]
+    .cbind_DDF(x, objects)
 })
 
 #' bindROWS is the lower-level function for \code{rbind}.
@@ -104,8 +127,8 @@ setReplaceMethod(
 {
     xstub <- setNames(seq_along(x), names(x))
     if (missing(j)) {
-        i <- normalizeSingleBracketSubscript(i, xstub)
-        lazyIndex(x) <- .update_index(lazyIndex(x), i, NULL)
+        j <- normalizeSingleBracketSubscript(i, xstub)
+        lazyIndex(x) <- .update_index(lazyIndex(x), j, NULL)
     } else {
         j <- normalizeSingleBracketSubscript(j, xstub)
         x@listData[j] <- lapply(j, function(j, x) x[[j]], x)

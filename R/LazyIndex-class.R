@@ -47,19 +47,18 @@ setValidity2("LazyIndex", .validate_LazyIndex)
 }
 
 ### Arguments 'ignore.mcols' and 'check' are ignored. Although we have
-### "bindROWS,LazyIndex" implemented, and so the "c,lazyIndex" works,
+### "cbind,LazyIndex" implemented, and so the "c,lazyIndex" works,
 ### but it is not used in the "DelayedDataFrame". Will keep now for
 ### any potential usage later.
-#' bindROWS 
-#' @name bindROWS
+#' cbind 
+#' @name cbind
 #' @rdname LazyIndex-class
 #' @aliases bindCOLS,LazyIndex-class
 #' @importFrom methods slot
 #' @importFrom utils head
 
-setMethod("bindROWS", "LazyIndex",
-          function(x, objects=list(), use.names = TRUE,
-                   ignore.mcols = FALSE, check = TRUE)
+.cbind_lazyIndex <- function(x, objects=list(), use.names = TRUE,
+                             ignore.mcols = FALSE, check = TRUE)
 {
     if (!is.list(objects)) 
         stop("'objects' must be a list")
@@ -73,6 +72,12 @@ setMethod("bindROWS", "LazyIndex",
     listData <- unlist(listData, recursive=FALSE)
 
     .lazyIndex_compose(listData, index)
+}
+#' @exportMethod cbind
+setMethod("cbind", "LazyIndex", function(..., deparse.level = 1)
+{
+    objects <- list(...)
+    .cbind_lazyIndex(objects[[1L]], objects[-1L], check=FALSE)
 })
 
 #' @importFrom stats setNames
