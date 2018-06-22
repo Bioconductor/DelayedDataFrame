@@ -38,12 +38,19 @@ OR as long as DDF is been depended by other package, there is no need to export 
 
 -- todo: 
 1. rename "c,LazyIndex" into "cbind,LazyIndex". "bindROWS,LazyIndex"  -- done!
-2. cbind, coercion all objects into DDF. Do not need to define coercion of DDF to dDF with no-op because as() does not do the correct thing. 
-still need is(x,"DDF") to check if DDF. 
-DataFrame: c -- cbind -- DataFrame()
-DDF: c -- cbind -- .cbindDDF   -- done!
-DDF() -- cbind -- done!
-checkings?? cbind to make sure all DDF objects to have same nrows. otherwise, iterate atomic ... 
+2. DataFrame: c -- cbind -- DataFrame()
+   DDF: c -- cbind -- .cbind_DDF   -- done!
+   DDF() -- cbind -- done!
+3. cbind, coercion all objects into DDF. Do not need to define coercion of DDF to DDF with no-op because as() does not do the correct thing. still need is(x,"DDF") to check if DDF.   -- done!
+4. Question: cbind(DDF, DF) would incur both "cbind,DDF" and "cbind,DF". How to distinguish?
+   just to make sure the first argument to be of the class we desire the "cbind" method to work. call "DelayedDataFrame:::.cbind_DelayedDataFrame" inside "cbind,DataFrame" after checking if any argument is of DDF derivative. And "Depends/imports" DelayedDataFrame in DESCRIPTION. 
+   
+4. checkings?? cbind to make sure all DDF objects to have same nrows. otherwise, iterate atomic ... 
+
+S3 & S4: 
+S3: function: class could be arbitrary; method could be defined directly without generic, even when class "x" does not exist. func.X <- function(x, ...); you can use S3 method on S4 class. 
+S4: setClass(), setGeneric("method"), setMethod("method", signature="X")
+
 
 ## think of SimpleList as rectangular!
 

@@ -71,17 +71,29 @@ setMethod("names", "DelayedDataFrame", function(x)
 }
 
 #' \code{cbind} for DelayedDataFrame inherits the lazyIndex's if
-#' inputs are all DelayedDataFrame. Otherwise, return a new
+#' inputs have any DelayedDataFrame objects. Otherwise, return a new
 #' DelayedDataFrame with NULL lazyIndexes.
 #' @exportMethod cbind
 #' @rdname DelayedDataFrame-method
 #' @param ... One or more vector-like or matrix-like objects. These
 #'     can be given as named arguments.
-#' @param deparse.level See ‘?base::cbind’ for a description of this argument.
+#' @param deparse.level See ‘?base::cbind’ for a description of this
+#'     argument.
 #' @aliases cbind,DelayedDataFrame-method
 setMethod("cbind", "DelayedDataFrame", function(..., deparse.level = 1)
 {
+    ## browser()
     objects <- list(...)
+    isDDF <- vapply(unname(objects), is, logical(1), "DelayedDataFrame")
+    ## if (!any(isDDF))
+    ##     callNextMethod()
+    ## if (!is(objects[[1]], "DelayedDataFrame"))
+    ##     stop(paste('there must be at least one "DelayedDataFrame"',
+    ##                'object to have "cbind,DelayedDataFrame" work.')
+    for (i in which(!isDDF)){
+        x <- as(objects[[i]], "DelayedDataFrame")
+        objects[[i]] <- x
+    }
     x <- objects[[1]]
     objects <- objects[-1]
     .cbind_DDF(x, objects)

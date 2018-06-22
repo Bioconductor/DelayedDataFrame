@@ -56,13 +56,15 @@ DelayedDataFrame <- function(..., row.names=NULL, check.names=TRUE)
     ## browser()
     listData <- list(...)
     isDDF <- vapply(unname(listData), is, logical(1), "DelayedDataFrame")
-    if (length(isDDF) && all(isDDF)) {
-        ddf <- do.call(cbind, listData)
+    if (length(listData) > 0 && any(isDDF)) {
+        ans <- do.call(cbind, listData)
     } else {
         df <- DataFrame(..., row.names=row.names, check.names=check.names)
-        ddf <- as(df, "DelayedDataFrame")
+        ans <- as(df, "DelayedDataFrame")
     }
-    ddf
+    if (!is(ans, "DelayedDataFrame"))
+        ans <- as(ans, "DelayedDataFrame")
+    ans
 }
 
 ###-------------
@@ -89,7 +91,8 @@ setMethod("lazyIndex", "DelayedDataFrame", function(x) x@lazyIndex)
 ## #' @param from a \code{DataFrame}, \code{DelayedDataFrame}, or \code{ANY} object.
 setAs("DataFrame", "DelayedDataFrame", function(from)
 {
-    if (identical(dim(from), c(0L, 0L))) {
+    ## if (identical(dim(from), c(0L, 0L))) {
+    if (ncol(from) == 0) {
         lazyIndex <- .LazyIndex()
     } else {     
         lazyIndex <- .LazyIndex(vector("list", 1), index=rep(1L, length(from)))

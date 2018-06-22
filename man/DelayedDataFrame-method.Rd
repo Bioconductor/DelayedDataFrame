@@ -9,7 +9,7 @@
 \alias{extractROWS,DelayedDataFrame,ANY-method}
 \alias{extractROWS,DelayedDataFrame-method}
 \title{\code{cbind} for DelayedDataFrame inherits the lazyIndex's if
-inputs are all DelayedDataFrame. Otherwise, return a new
+inputs have any DelayedDataFrame objects. Otherwise, return a new
 DelayedDataFrame with NULL lazyIndexes.}
 \usage{
 \S4method{as.list}{DelayedDataFrame}(x, use.names = TRUE)
@@ -32,7 +32,8 @@ DelayedDataFrame with NULL lazyIndexes.}
 \item{...}{One or more vector-like or matrix-like objects. These
 can be given as named arguments.}
 
-\item{deparse.level}{See ‘?base::cbind’ for a description of this argument.}
+\item{deparse.level}{See ‘?base::cbind’ for a description of this
+argument.}
 }
 \value{
 colnames of \code{DelayedDataFrame}
@@ -42,7 +43,7 @@ DelayedDataFrame related methods. \code{as.list},
     \code{rbind} would incur realization.
 
 \code{cbind} for DelayedDataFrame inherits the lazyIndex's if
-inputs are all DelayedDataFrame. Otherwise, return a new
+inputs have any DelayedDataFrame objects. Otherwise, return a new
 DelayedDataFrame with NULL lazyIndexes.
 
 bindROWS is the lower-level function for \code{rbind}.

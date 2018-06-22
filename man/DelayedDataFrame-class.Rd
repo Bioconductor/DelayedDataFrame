@@ -10,7 +10,7 @@
 \alias{coerce}
 \alias{coerce,DataFrame,DelayedDataFrame-method}
 \alias{lazyIndex<-}
-\alias{[,DelayedDataFrame,ANY,ANY-method}
+\alias{[,DelayedDataFrame,ANY,ANY,ANY-method}
 \alias{[,DelayedDataFrame-method}
 \title{DelayedDataFrame-class}
 \usage{
@@ -18,7 +18,7 @@ DelayedDataFrame(..., row.names = NULL, check.names = TRUE)
 
 lazyIndex(x) <- value
 
-\S4method{[}{DelayedDataFrame,ANY,ANY}(x, i, j, ..., drop = TRUE)
+\S4method{[}{DelayedDataFrame,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
 }
 \arguments{
 \item{...}{other arguments to pass.}
