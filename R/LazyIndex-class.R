@@ -2,12 +2,29 @@
 ## LazyIndex
 ###----------
 
+#' The \code{LazyIndex} class and methods.
+#' @rdname LazyIndex-class
+#' @description The \code{LazyIndex} class is designed to carry
+#'     mapping indexes for \code{DelayedDataFrame} columns. So that
+#'     some operations (e.g., subsetting) on \code{DelayedDataFrame}
+#'     are delayed until a realization call is incurred. (e.g.,
+#'     as.list(), DataFrame(), ...)
+#' @export
+
 .LazyIndex <- setClass(
     "LazyIndex",
     contains = "SimpleList",  ## extend list? List? 
     slots = c(index = "integer")
 )
 
+#' @rdname LazyIndex-class
+#' @description \code{LazyIndex} constructor.
+#' @param listData the list data for all mapping indexes that are used in
+#'     corresponding \code{DelayedDataFrame} object.
+#' @param index the position of mapping indexes in \code{listData} for
+#'     each column of the corresponding \code{DelayedDataFrame}
+#'     object.
+#' @return a \code{LazyIndex} object. 
 LazyIndex <-
     function(listData = list(), index = integer())
 {
@@ -38,6 +55,8 @@ LazyIndex <-
 setValidity2("LazyIndex", .validate_LazyIndex)
 
 .fulllength <- function(x) {  ## dim(), rectangular., concatenateObject (works as cbind)
+    if (length(x) == 0)
+        return(0)
     indexes <- .listData(x)
     indexLength <- lengths(indexes)
     uniqLen <- unique(indexLength)
@@ -50,13 +69,6 @@ setValidity2("LazyIndex", .validate_LazyIndex)
 ### "cbind,LazyIndex" implemented, and so the "c,lazyIndex" works,
 ### but it is not used in the "DelayedDataFrame". Will keep now for
 ### any potential usage later.
-#' cbind 
-#' @name cbind
-#' @rdname LazyIndex-class
-#' @aliases bindCOLS,LazyIndex-class
-#' @importFrom methods slot
-#' @importFrom utils head
-
 .cbind_lazyIndex <- function(x, objects=list(), use.names = TRUE,
                              ignore.mcols = FALSE, check = TRUE)
 {
@@ -71,16 +83,38 @@ setValidity2("LazyIndex", .validate_LazyIndex)
     index <- unlist(indexes) + rep(offsets, lengths(indexes))
     listData <- unlist(listData, recursive=FALSE)
 
-    .lazyIndex_compose(listData, index)
-}
-#' @exportMethod cbind
+    .lazyIndex_compose(listData, index) }
+
+#' @rdname LazyIndex-class
+#' @aliases cbind,LazyIndex-method
+#' @param ... \code{LazyIndex} objects.
+#' @param deparse.level See \code{?base::cbind} for a description of
+#'     this argument.
+#' @details the \code{cbind,LazyIndex} method is defined to bind the
+#'     LazyIndexes column-wise when \code{cbind,DelayedDataFrame}
+#'     function is called.
+#' @importFrom methods slot
+#' @export
+
 setMethod("cbind", "LazyIndex", function(..., deparse.level = 1)
 {
     objects <- list(...)
     .cbind_lazyIndex(objects[[1L]], objects[-1L], check=FALSE)
 })
 
+#' @rdname LazyIndex-class
+#' @aliases [,LazyIndex-method
+#' @description the subsetting method for \code{LazyIndex} object.
+#' @param x \code{LazyIndex} object.
+#' @param i row subscript for \code{LazyIndex}, which will subset the
+#'     \code{listData} slot.
+#' @param j column subscript for \code{LazyIndex}, which will subset
+#'     the \code{index} slot.
+#' @param drop Logical. Wheter to drop the dimension if any of the
+#'     dimensions has length 1. Default is TRUE.
 #' @importFrom stats setNames
+#' @export
+
 setMethod("[", c("LazyIndex", "ANY"),
     function(x, i, j, ..., drop = TRUE)
 {

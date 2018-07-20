@@ -1,6 +1,8 @@
 ###-------------
 ## methods
-###------------- the "as.list", "rbind(a thin wrapper of bindROWS)"
+###-------------
+
+### the "as.list", "rbind(a thin wrapper of bindROWS)"
 ### will realize all lazyIndexes and construct a new DelayedDataFrame
 ### (with initial lazyIndex of NULL).
 
@@ -21,14 +23,21 @@ setMethod("getListElement", "DelayedDataFrame", function(x, i, exact=TRUE)
 
 ### "as.list" function is called in lapply("DelayedDataFrame", ) and
 ### names("DelayedDataFrame")...
-#' @description DelayedDataFrame related methods. \code{as.list},
-#'     \code{rbind} would incur realization.
+
+#' DelayedDataFrame related methods.
 #' @rdname DelayedDataFrame-method
-#' @param x a \code{DelayedDataFrame} object.
-#' @param use.names whether to use the colnames of
-#'     \code{DelayedDataFrame} as the names for the returned list.
+#' @description \code{as.list}, \code{rbind} would incur realization
+#'     of the \code{lazyIndex} slot in \code{DelayedDataFrame} object.
+#' @param x \code{as.list,DelayedDataFrame}: a \code{DelayedDataFrame}
+#'     object. OR, \code{[,DelayedDataFrame}: \code{DelayedDataFrame}
+#'     object to be subsetted.
+#' @param use.names \code{as.list,DelayedDataFrame}: whether to use
+#'     the colnames of \code{DelayedDataFrame} as the names for the
+#'     returned list. OR, \code{bindROWS,DelayedDataFrame}: whether to
+#'     use rownames of the input arguments. Default is TRUE.
 #' @aliases as.list,DelayedDataFrame-method
-#' @exportMethod as.list
+#' @export
+#' 
 setMethod("as.list", "DelayedDataFrame", function(x, use.names=TRUE)  
 {
     ans <- lapply(seq_along(x), function(j) x[[j]])
@@ -46,8 +55,7 @@ setMethod("names", "DelayedDataFrame", function(x)
     names(x@listData)
 })
 
-### if inputs are all DDF, cbind will concatenate the old lazyIndexes and listData. 
-#' @importMethodsFrom BiocGenerics cbind
+### cbind,DDF will keep and cbind the old lazyIndexes.
 .cbind_DDF <- function(x, objects = list())
 {
     ## browser()
@@ -70,16 +78,21 @@ setMethod("names", "DelayedDataFrame", function(x)
     ## callNextMethod()
 }
 
-#' \code{cbind} for DelayedDataFrame inherits the lazyIndex's if
-#' inputs have any DelayedDataFrame objects. Otherwise, return a new
-#' DelayedDataFrame with NULL lazyIndexes.
-#' @exportMethod cbind
 #' @rdname DelayedDataFrame-method
-#' @param ... One or more vector-like or matrix-like objects. These
-#'     can be given as named arguments.
+#' @description \code{cbind} for DelayedDataFrame inherits the
+#'     lazyIndex's if inputs have any DelayedDataFrame
+#'     objects. Otherwise, return a new DelayedDataFrame with NULL
+#'     lazyIndexes.
+#' @param ... \code{cbind,DelayedDataFrame}: One or more vector-like
+#'     or matrix-like objects. These can be given as named
+#'     arguments. OR, \code{[,DelayedDataFrame}: other arguments to
+#'     pass.
 #' @param deparse.level See ‘?base::cbind’ for a description of this
 #'     argument.
 #' @aliases cbind,DelayedDataFrame-method
+#' @export
+#' @importMethodsFrom BiocGenerics cbind
+
 setMethod("cbind", "DelayedDataFrame", function(..., deparse.level = 1)
 {
     ## browser()
@@ -91,8 +104,8 @@ setMethod("cbind", "DelayedDataFrame", function(..., deparse.level = 1)
     ##     stop(paste('there must be at least one "DelayedDataFrame"',
     ##                'object to have "cbind,DelayedDataFrame" work.')
     for (i in which(!isDDF)){
-        x <- as(objects[[i]], "DelayedDataFrame")
-        objects[[i]] <- x
+        a <- as(objects[[i]], "DelayedDataFrame")
+        objects[[i]] <- a
     }
     x <- objects[[1]]
     objects <- objects[-1]
@@ -102,14 +115,21 @@ setMethod("cbind", "DelayedDataFrame", function(..., deparse.level = 1)
 #' bindROWS is the lower-level function for \code{rbind}.
 #' @rdname DelayedDataFrame-method
 #' @aliases bindROWS,DelayedDataFrame-method
+#' @param objects the \code{DelayedDataFrame} objects to be passed
+#'     into \code{bindROWS}.
+#' @param ignore.mcols Logical. This argument is ignored for
+#'     \code{bindROWS,DelayedDataFrame}.
+#' @param check Logical. This argument is ignored for
+#'     \code{bindROWS,DelayedDataFrame}.
 setMethod(
     "bindROWS", "DelayedDataFrame",
-    function(x, objects = list(), use.names = TRUE, ignore.mcols = FALSE, check = TRUE)
-{
-    ans <- callNextMethod()
-    lazyIndex(ans) <- LazyIndex(vector("list", 1), rep(1L, ncol(x)))
-    ans
-})
+    function(x, objects = list(), use.names = TRUE,
+             ignore.mcols = FALSE, check = TRUE)
+    {
+        ans <- callNextMethod()
+        lazyIndex(ans) <- LazyIndex(vector("list", 1), rep(1L, ncol(x)))
+        ans
+    })
 
 ###--------------------
 ## subsetting methods
@@ -133,6 +153,12 @@ setMethod(
 #' @rdname DelayedDataFrame-method
 setMethod("extractROWS", "DelayedDataFrame", .extractROWS_DelayedDataFrame)
 
+#' @rdname DelayedDataFrame-method
+#' @aliases "[<-,DelayedDataFrame-method"
+#' @param value the new values in the \code{i,j} subscripts of
+#'     \code{DelayedDataFrame} object.
+#' @export
+#' 
 setReplaceMethod(
     "[", c("DelayedDataFrame", "ANY"),
     function(x, i, j, ..., value)
@@ -149,18 +175,14 @@ setReplaceMethod(
     callNextMethod()
 })
 
-#' @importFrom stats setNames
-#' @importFrom methods callNextMethod
-#' @exportMethod [
-#' @aliases [,DelayedDataFrame-method
-#' @rdname DelayedDataFrame-class
-#' @param x input
+#' @rdname DelayedDataFrame-method
+#' @aliases "[,DelayedDataFrame-method"
 #' @param i row subscript
 #' @param j col subscript
 #' @param drop if drop with reduced dimension, default is TRUE.
-#' @param row.names rownames
-#' @param check.names if check names.
-#' @param ... other arguments to pass.
+#' @export
+#' @importFrom stats setNames
+#' @importFrom methods callNextMethod
 
 setMethod("[", c("DelayedDataFrame", "ANY", "ANY", "ANY"),
           function (x, i, j, ..., drop = TRUE) 

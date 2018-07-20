@@ -1,0 +1,76 @@
+### Problem raised from: when we define the coercion method using `setAs("DelayedDataFrame", "DataFrame")` (`DelayedDataFrame` contains `DataFrame` with one additional slot `lazyIndex`), and construct a `VariantExperiment` object by `ve <- VariantExperiment(colData=DelayedDataFrame())`, then the `col(VE)` returns a `DataFrame` instead of a `DelayedDataFrame`. After discussiong this with Herve, there are 3 problems identified: 
+
+1. why would `new("B", x="")` call `as(..., "A", strict=FALSE)` on the incoming slot value?
+2. as() not behaving as expected, because a call like this `as(x, "A", strict=FALSE)`, `as()` should detect that `x` extends `A` and just return x. It should not even call the coercion method from Aa to A.
+3. you can't see the automatic coercion method until you've used it i.e. `selectMethod("coerce", c("Aa", "A"))` will fail if you've not called `as(new("Aa") "A")` before. All these problems have been around for years. I started to report them in the R bug tracker at some point but stopped after a while because nobody would take care of them. (Herve)
+
+So a workaround this led us to a temporary fix of the above problems, where we explicitly define the coercion method using `setMethod("coerce", c("Aa", "A"))` by adding the `strict` argument for checking (if `!strict && is(from, "A")`) inside the coercion method. But eventually, the checking should be implemented inside `as(..., "A", strict=FALSE)` method, and remove the `strict` argument from the standard coercion method by using `setAs`. 
+
+### 5/10/2018, work around about coercion method with some demo code. 
+
+```{r}
+setClass("A", representation(x = "numeric"))
+setClass("Aa", contains = "A")
+setClass("B", representation(x = "A"))
+class(new("B", x = new("Aa"))@x)
+## [1] "Aa"
+## attr(,"package")
+## [1] ".GlobalEnv"
+as(new("Aa"), "A", strict=FALSE)
+## An object of class "Aa"
+## Slot "x":
+## numeric(0)
+selectMethod("coerce", c("Aa", "A"))
+## Method Definition:
+## function (from, to = "A", strict = TRUE) 
+## if (strict) {
+##     class(from) <- "A"
+##     from
+## } else from
+## <bytecode: 0x4328370>
+
+## Signatures:
+##         from to 
+## target  "Aa" "A"
+## defined "Aa" "A"
+```
+
+when explicitly define coercion method between Aa and A, the coercion method ignores the "strict" argument. 
+```{r}
+setAs("Aa", "A", function(from) new("A", x = from@x))
+## the standard way to define coercion method (using setAs) does not let you handle the "strict" argument. And when calling new(), it calls as(new("Aa"), "A", strict=FALSE) (problem 1, "new" calls "as"), but the coercion method could only return "A" with strict=TRUE. (problem 2). So we can only define the coercion method using setMethod("coerce", c("Aa", "A")), and add the "strict" argument here. 
+class(new("B", x=new("Aa"))@x)
+## [1] "A"
+## attr(,"package")
+## [1] ".GlobalEnv"
+as(new("Aa"), "A", strict=FALSE)
+## An object of class "A"
+## Slot "x":
+## numeric(0)
+selectMethod("coerce", c("Aa", "A"))  ## "strict" argument ignored. 
+## Method Definition:
+## function (from, to = "A", strict = TRUE) 
+## new("A", x = from@x)
+## <bytecode: 0x1f50da8>
+
+## Signatures:
+##         from to 
+## target  "Aa" "A"
+## defined "Aa" "A"
+```
+
+work around
+```{r}
+setMethod("coerce", c("Aa", "A"),
+    function(from, to="A", strict=TRUE) {
+        if (!strict && is(from, "A"))
+            return(from)
+        new("A", x=from@x)
+    }
+)
+class(new("B", x = new("Aa"))@x)
+## [1] "Aa"
+## attr(,"package")
+## [1] ".GlobalEnv"
+```	
+

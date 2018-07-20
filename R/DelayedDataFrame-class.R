@@ -44,13 +44,20 @@
 ## constructor
 ###-------------
 
-### For \code{DelayedDataFrame} constructor, If the inputs are all
-### DelayedDataFrame, will concatenate all existing lazyIndex's and
-### cbind for listData.
-#' @export DelayedDataFrame
-#' @import S4Vectors
+
 #' @aliases DelayedDataFrame
 #' @rdname DelayedDataFrame-class
+#' @param ... the arguments to pass into construction of a new
+#'     \code{DelayedDataFrame}.
+#' @param row.names the \code{rownames} for the newly constructed
+#'     \code{DelayedDataFrame} object.
+#' @param check.names logical.  If ‘TRUE’ then the names of the
+#'     variables in the \code{DelayedDataFrame} are checked to ensure
+#'     that they are syntactically valid variable names and are not
+#'     duplicated.  If necessary they are adjusted (by ‘make.names’)
+#'     so that they are.
+#' @export
+#' @import S4Vectors
 DelayedDataFrame <- function(..., row.names=NULL, check.names=TRUE)
 {
     ## browser()
@@ -67,12 +74,19 @@ DelayedDataFrame <- function(..., row.names=NULL, check.names=TRUE)
     ans
 }
 
+### FIXME: the "check.names" in constructor is not working here yet. 
+
+
 ###-------------
 ## accessor
 ###-------------
 
 setGeneric("lazyIndex", function(x) standardGeneric("lazyIndex"), signature="x")
 
+#' @rdname DelayedDataFrame-class
+#' @aliases lazyIndex lazyIndex,DelayedDataFrame
+#' @description the \code{lazyIndex} slot getter and setter for
+#'     \code{DelayedDataFrame} object.
 setMethod("lazyIndex", "DelayedDataFrame", function(x) x@lazyIndex)
 
 ###-------------
@@ -85,13 +99,15 @@ setMethod("lazyIndex", "DelayedDataFrame", function(x) x@lazyIndex)
 ## define set("ANY", "DelayedDataFrame").
 
 #' @name coerce
-#' @exportMethod coerce
-#' @aliases coerce,DataFrame,DelayedDataFrame-method
 #' @rdname DelayedDataFrame-class
-## #' @param from a \code{DataFrame}, \code{DelayedDataFrame}, or \code{ANY} object.
+#' @aliases coerce,DataFrame,DelayedDataFrame-method
+#' @description the coercion method between \code{DataFrame} and
+#'     \code{DelayedDataFrame} objects.
+#' @param from the object to be converted.
+#' @export
+
 setAs("DataFrame", "DelayedDataFrame", function(from)
 {
-    ## if (identical(dim(from), c(0L, 0L))) {
     if (ncol(from) == 0) {
         lazyIndex <- .LazyIndex()
     } else {     
@@ -100,13 +116,11 @@ setAs("DataFrame", "DelayedDataFrame", function(from)
     .DelayedDataFrame(from, lazyIndex = lazyIndex)
 })
 
-## setAs("DelayedDataFrame", "DataFrame", function(from)
-## {
-##     listData <- as.list(from)
-##     idx <- vapply(listData, is, logical(1), "DelayedArray")
-##     listData[idx] <- lapply(listData[idx], I)
-##     DataFrame(listData, row.names = rownames(from))
-## })
+#' @rdname DelayedDataFrame-class
+#' @aliases coerce,DelayedDataFrame,DataFrame-method
+#' @param to the class of object to be returned by coercion.
+#' @param strict Logical. Whether to force return a \code{DataFrame}. 
+#' @export
 
 setMethod("coerce", c("DelayedDataFrame", "DataFrame"),
           function(from, to="DataFrame", strict=TRUE)
@@ -120,9 +134,12 @@ setMethod("coerce", c("DelayedDataFrame", "DataFrame"),
                   DataFrame(listData, row.names = rownames(from))
               }
           }
-)
+          )
 
-###
+#' @name coerce
+#' @rdname DelayedDataFrame-class
+#' @aliases coerce,ANY,DelayedDataFrame-method
+#' @export
 setAs("ANY", "DelayedDataFrame", function(from){
     df <- as(from, "DataFrame")
     as(df, "DelayedDataFrame")
@@ -139,12 +156,33 @@ setGeneric(
     function(x, value) standardGeneric("lazyIndex<-"),
     signature="x")
 
-#' @description the setter for the \code{lazyIndex} slot of \code{DelayedDataFrame} object.
+#' @rdname DelayedDataFrame-class
+#' @aliases "lazyIndex<-" "lazyIndex<-, DelayedDataFrame-class"
 #' @param x the \code{DelayedDataFrame} object.
-#' @param value the new value of \code{lazyIndex} slot for \code{DelayedDataFrame} object.
-#' @return the \code{DelayedDataFrame} object with new value of \code{lazyIndex} slot.
+#' @param value the new value of \code{lazyIndex} slot for
+#'     \code{DelayedDataFrame} object.
+#' @return \code{lazyIndex<-}: the \code{DelayedDataFrame} object with new value of
+#'     \code{lazyIndex} slot.
+#' @details Please be very careful to use this replace method for
+#'     \code{lazyIndex} slot. Because it only replace the
+#'     \code{lazyIndex} slot, but not necessarily the \code{nrow} and
+#'     \code{rownames} slots. If you want to have synchronized
+#'     subsetting for all slots, the \code{[} method should be used.
 setReplaceMethod( "lazyIndex", "DelayedDataFrame", function(x, value) {
-    BiocGenerics:::replaceSlots(x, lazyIndex=value, check=FALSE)
+    ## browser()
+    BiocGenerics:::replaceSlots(x, lazyIndex = value, check=FALSE)
+    ## fl <- .fulllength(value)
+    ## if (! is.null(fl)) { ## fl == 0 (null lazyIndex with 0 index) OR
+    ##                      ## fl > 0 (need to update the new
+    ##                      ## .fulllength(value) )
+    ##     BiocGenerics:::replaceSlots(x, nrows = fl, check = FALSE)
+    ##     ld <- .listData(value)
+    ##     ldisnull <- sapply(ld, is.null)
+    ##     newrowidx <- ld[[ which(!ldisnull)[1] ]]
+    ##     BiocGenerics:::replaceSlots(x, rownames = rownames(x)[newrowidx], check = FALSE)
+    ##     ## FIXME: only use the first non-null index as the new index
+    ##     ## for rownames.
+    ## }
 })
 
 ###-----------------
@@ -165,3 +203,36 @@ setReplaceMethod( "lazyIndex", "DelayedDataFrame", function(x, value) {
 
 setValidity2("DelayedDataFrame", .validate_DelayedDataFrame)
 
+## setMethod("show", "DelayedDataFrame", function (object) 
+## {
+##     browse()
+##     nhead <- get_showHeadLines()
+##     ntail <- get_showTailLines()
+##     nr <- nrow(object)
+##     nc <- ncol(object)
+##     cat(class(object), " with ", nr, ifelse(nr == 1, " row and ", 
+##         " rows and "), nc, ifelse(nc == 1, " column\n", " columns\n"), 
+##         sep = "")
+##     if (nr > 0 && nc > 0) {
+##         nms <- rownames(object)
+##         if (nr <= (nhead + ntail + 1L)) {
+##             out <- as.matrix(format(as.data.frame(lapply(object, 
+##                 showAsCell), optional = TRUE)))
+##             if (!is.null(nms)) 
+##                 rownames(out) <- nms
+##         }
+##         else {
+##             out <- rbind(as.matrix(format(as.data.frame(lapply(object, 
+##                 function(x) showAsCell(head(x, nhead))), optional = TRUE))), 
+##                 rbind(rep.int("...", nc)), as.matrix(format(as.data.frame(lapply(object, 
+##                   function(x) showAsCell(tail(x, ntail))), optional = TRUE))))
+##             rownames(out) <- .rownames(nms, nr, nhead, ntail)
+##         }
+##         classinfo <- matrix(unlist(lapply(object, function(x) {
+##             paste0("<", classNameForDisplay(x)[1], ">")
+##         }), use.names = FALSE), nrow = 1, dimnames = list("", 
+##             colnames(out)))
+##         out <- rbind(classinfo, out)
+##         print(out, quote = FALSE, right = TRUE)
+##     }
+## }

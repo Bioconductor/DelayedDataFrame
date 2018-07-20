@@ -1,6 +1,15 @@
 5/11/2018, review code with Herve & Daniel:
 
 ## DelayedDataFrame code polish. 
+- .fulllength(LazyIndex(...)), return 0 if listData == NULL.  -- done!
+  so .fulllength(LazyIndex()) returns 0 instead of integer(0).  
+- `lazyIndex<-` replacement method. do not update show method for nrows, rownames().   -- done! (specified in @details)
+- DDF constructor, construct DDF for each entry of argument, and cbind(DDF). -- doing!
+- update test_LazyIndex, for .fulllength().   -- done!
+  return 0 for LazyIndex(). NULL for NULL (initial) lazyIndex. integer for non-NULL lazyIndex. 
+- reorganize and update test_DDF-class.  -- done! 
+- reorganize and update test_DDF-methods, with constructor function with non DDF and DDF inputs. 
+
 - stand-alone package? convenient.   -- done!
 - check colnames for DDF construction. 
 - extractCOLS...  (forked from S4Vectors to Liubuntu, will test)

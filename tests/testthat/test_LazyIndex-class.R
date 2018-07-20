@@ -80,24 +80,35 @@ test_that("[ subsetting for LazyIndex works", {
     expect_identical(exp, ll[2])
 })
 
-### The "c,LazyIndex" works as intended, but it is not being called
+### The "cbind,LazyIndex" works as intended, but it is not being called
 ### for "DelayedDataFrame", will only keep for potential usage later.
-test_that("concatenateObjects for LazyIndex works", {
+test_that("cbind for LazyIndex works", {
     ll <- LazyIndex(list(1:10, NULL), index=1:2)
 
     expect_identical(ll, c(ll))
 
     exp <- LazyIndex(list(1:10, NULL), index=rep(1:2, 2))
-    expect_identical(exp, c(ll, ll))
+    expect_identical(exp, cbind(ll, ll))
 
     exp <- LazyIndex(list(1:10, NULL), index=rep(1:2, 3))
-    expect_identical(exp, c(ll, ll, ll))
+    expect_identical(exp, cbind(ll, ll, ll))
 
     ll1 <- LazyIndex(list(NULL, 1:10), index=1:2)
     exp <- LazyIndex(list(1:10, NULL), index=c(1:2, 2:1))
-    expect_identical(exp, c(ll, ll1))
+    expect_identical(exp, cbind(ll, ll1))
 
     ll1 <- LazyIndex(list(1:5), index=rep(1L, 2))
-    expect_error(c(ll, ll1))
+    expect_error(cbind(ll, ll1))
 })
 
+
+test_that(".fulllength for LazyIndex works", {
+    ll <- LazyIndex(vector("list", 1), index=rep(1L, 2))
+    expect_identical(.fulllength(ll), NULL)
+
+    ll <- LazyIndex(list(1:10, NULL), index=1:2)
+    expect_identical(.fulllength(ll), 10L)
+
+    nullLL <- LazyIndex()
+    expect_identical(.fulllength(nullLL), 0)
+})

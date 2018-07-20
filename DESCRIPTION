@@ -18,7 +18,10 @@ Encoding: UTF-8
 URL: https://github.com/Bioconductor/DelayedDataFrame
 BugReports: https://github.com/Bioconductor/DelayedDataFrame/issues
 Imports: 
-    methods
+    methods,
+    stats,
+    utils,
+    BiocGenerics
 LazyData: true
 RoxygenNote: 6.0.1
 Suggests:

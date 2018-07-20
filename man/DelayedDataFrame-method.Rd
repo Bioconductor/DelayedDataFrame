@@ -8,9 +8,11 @@
 \alias{bindROWS,DelayedDataFrame-method}
 \alias{extractROWS,DelayedDataFrame,ANY-method}
 \alias{extractROWS,DelayedDataFrame-method}
-\title{\code{cbind} for DelayedDataFrame inherits the lazyIndex's if
-inputs have any DelayedDataFrame objects. Otherwise, return a new
-DelayedDataFrame with NULL lazyIndexes.}
+\alias{[<-,DelayedDataFrame-method}
+\alias{"[<-,DelayedDataFrame-method"}
+\alias{[,DelayedDataFrame-method}
+\alias{"[,DelayedDataFrame-method"}
+\title{DelayedDataFrame related methods.}
 \usage{
 \S4method{as.list}{DelayedDataFrame}(x, use.names = TRUE)
 
@@ -22,29 +24,58 @@ DelayedDataFrame with NULL lazyIndexes.}
   ignore.mcols = FALSE, check = TRUE)
 
 \S4method{extractROWS}{DelayedDataFrame,ANY}(x, i)
+
+\S4method{[}{DelayedDataFrame}(x, i, j, ...) <- value
+
+\S4method{[}{DelayedDataFrame}(x, i, j, ..., drop = TRUE)
 }
 \arguments{
-\item{x}{a \code{DelayedDataFrame} object.}
+\item{x}{\code{as.list,DelayedDataFrame}: a \code{DelayedDataFrame}
+object. OR, \code{[,DelayedDataFrame}: \code{DelayedDataFrame}
+object to be subsetted.}
 
-\item{use.names}{whether to use the colnames of
-\code{DelayedDataFrame} as the names for the returned list.}
+\item{use.names}{\code{as.list,DelayedDataFrame}: whether to use
+the colnames of \code{DelayedDataFrame} as the names for the
+returned list. OR, \code{bindROWS,DelayedDataFrame}: whether to
+use rownames of the input arguments. Default is TRUE.}
 
-\item{...}{One or more vector-like or matrix-like objects. These
-can be given as named arguments.}
+\item{...}{\code{cbind,DelayedDataFrame}: One or more vector-like
+or matrix-like objects. These can be given as named
+arguments. OR, \code{[,DelayedDataFrame}: other arguments to
+pass.}
 
 \item{deparse.level}{See ‘?base::cbind’ for a description of this
 argument.}
+
+\item{objects}{the \code{DelayedDataFrame} objects to be passed
+into \code{bindROWS}.}
+
+\item{ignore.mcols}{Logical. This argument is ignored for
+\code{bindROWS,DelayedDataFrame}.}
+
+\item{check}{Logical. This argument is ignored for
+\code{bindROWS,DelayedDataFrame}.}
+
+\item{i}{row subscript}
+
+\item{j}{col subscript}
+
+\item{value}{the new values in the \code{i,j} subscripts of
+\code{DelayedDataFrame} object.}
+
+\item{drop}{if drop with reduced dimension, default is TRUE.}
 }
 \value{
 colnames of \code{DelayedDataFrame}
 }
 \description{
-DelayedDataFrame related methods. \code{as.list},
-    \code{rbind} would incur realization.
+\code{as.list}, \code{rbind} would incur realization
+    of the \code{lazyIndex} slot in \code{DelayedDataFrame} object.
 
-\code{cbind} for DelayedDataFrame inherits the lazyIndex's if
-inputs have any DelayedDataFrame objects. Otherwise, return a new
-DelayedDataFrame with NULL lazyIndexes.
+\code{cbind} for DelayedDataFrame inherits the
+    lazyIndex's if inputs have any DelayedDataFrame
+    objects. Otherwise, return a new DelayedDataFrame with NULL
+    lazyIndexes.
 
 bindROWS is the lower-level function for \code{rbind}.
 }
