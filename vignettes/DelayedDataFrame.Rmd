@@ -1,0 +1,265 @@
+---
+title: "DelayedDataFrame: an on-disk represention of DataFrame"
+author: 
+- name: Qian Liu
+  affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
+- name: Hervé Pagès
+  affiliation: Fred Hutchinson Cancer Research Center, Seattle, WA
+- name: Martin Morgan
+  affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
+date: "last edit: 07/22/2018"
+output:
+    BiocStyle::html_document:
+        toc: true
+        toc_float: true
+package: DelayedDataFrame
+vignette: |
+    %\VignetteIndexEntry{DelayedDataFrame: an on-disk representation of data in DataFrame structure}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "##"
+)
+```
+
+```{r options, eval=TRUE, echo=FALSE}
+options(showHeadLines=3)
+options(showTailLines=3)
+```
+
+# Introduction
+
+As the genetic/genomic data are having increasingly larger profile,
+the annotation file are also getting much bigger than expected. the
+memory space in R has been an obstable for fast and efficient data
+processing, because most available _R_ or _Bioconductor_ packages are
+developed based on in-memory data manipulation. With some newly
+developed data structure as [HDF5][] or [GDS][], and the R interface of
+[DelayedArray][] to represent on-disk data structures with different
+back-end in R-user-friendly array data structure (e.g.,
+[HDF5Array][],[GDSArray][]), the high-throughput genetic/genomic data
+are now being able to easily loaded and manipulated within R. However,
+the annotation files for the samples and features inside the
+high-through data are also getting unexpectedly larger than
+before. With an ordinary `data.frame` or `DataFrame`, it is still
+getting more and more challenging for any analysis to be done within
+R. So here we have developed the `DelayedDataFrame`, which has the
+very similar characteristics as `data.frame` and `DataFrame`. But at
+the same time, all column data could be optionally saved on-disk
+(e.g., in [DelayedArray][] structure with any back-end). Common
+operations like constructing, subsetting, splitting, combining could
+be done in the same way as `DataFrame`. This feature of
+`DelayedDataFrame` could enable efficient on-disk reading and
+processing of the large-scale annotation files, and at the same,
+signicantly saves memory space with common `DataFrame` metaphor in
+_R_ and _Bioconductor_.
+
+[HDF5]: https://www.hdfgroup.org/solutions/hdf5/
+[GDS]: http://corearray.sourceforge.net/
+[DelayedArray]: https://bioconductor.org/packages/DelayedArray
+[GDSArray]: https://bioconductor.org/packages/GDSArray
+[HDF5Array]: https://bioconductor.org/packages/HDF5Array
+
+
+# Installation
+Download the package from Bioconductor: 
+
+```{r getPackage, eval=FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("DelayedDataFrame")
+```
+
+The development version is also available to download through github: 
+
+```{r getDevel, eval=FALSE}
+devtools::install_github("Bioconductor/DelayedDataFrame")
+```
+Load the package into R session before using:
+
+```{r Load, message=FALSE, warning=FALSE}
+library(DelayedDataFrame)
+```
+
+# DelayedDataFrame class
+
+## class extension
+
+`DelayedDataFrame` extends the `DataFrame` data structure, with an additional slot called `lazyIndex`, which saves all the mapping indexes for each column of the data inside `DelayedDataFrame`. It is similar to `data.frame` in terms of construction, subsetting, splitting, combining... The `rownames` are having same feature as `DataFrame`. It will not be given automatically, but only by explicitly specify in the constructor function `DelayedDataFrame(, row.names=...)` or using the slot setter function `rownames()<-`. 
+
+```{r, construction}
+da1 <- DelayedArray(array(1:10))
+da2 <- DelayedArray(array(11:30, dim=c(10,2)))
+(ddf <- DelayedDataFrame(da0=letters[1:10], da1=I(da1), da2=I(da2)) )
+```
+
+## slot accessors
+
+The slots of `DelayedDataFrame` could be accessed by `lazyIndex()`, `nrow()`, `rownames()` (if not NULL) functions. With a newly constructed `DelayedDataFrame` object, the initial value of `lazyIndex` slot will be NULL for all columns. 
+
+```{r, accessors}
+lazyIndex(ddf)
+nrow(ddf)
+rownames(ddf)
+```
+
+## `lazyIndex` slot
+
+The `lazyIndex` slot is in `LazyIndex` class, which is defined in the
+`DelayedDataFrame` package and extends the `SimpleList` class. The
+`listData` slot saves unique indexes for all the columns, and the
+`index` slots saves the position of index in `listData` slot for each
+column in `DelayedDataFrame` object.  In the above example, with an
+initial construction of `DelayedDataFrame` object, the index for each
+column will all be NULL, and all 3 columns points the NULL values
+which sits in the first position in `listData` slot of `lazyIndex`.
+
+```{r}
+lazyIndex(ddf)@listData
+lazyIndex(ddf)@index
+```
+
+Whenever an operation is done (e.g., subsetting), the `listData` slot
+inside the `DelayedDataFrame` stays the same, but the `lazyIndex` slot
+will be updated, so that the show method, further statistical
+calculation will be applied to the subsetting data set.  For example,
+here we subset the `DelayedDataFrame` object `ddf` to keep only the
+first 5 rows, and see how the `lazyIndex` works. As shown in below,
+after subsetting, the `listData` slot in `ddf1` stays the same as
+`ddf`. But the subsetting operation was recorded in the `lazyIndex`
+slot, and the slots of `lazyIndex`, `nrows` and `rownames` (if not
+NULL) are all updated. So the subsetting operation is kind of
+`delayed`.
+
+```{r, lazyIndex}
+ddf1 <- ddf[1:5,]
+identical(ddf@listData, ddf1@listData)
+lazyIndex(ddf1)
+nrow(ddf1)
+```
+
+Only when functions like `DataFrame()`, or `as.list()`, the 
+`lazyIndex` will be realized and `DelayedDataFrame` returned. 
+We will show the realization in the following coercion method section.     
+
+
+# DelayedDataFrame methods
+
+The common methods on `data.frame` or `DataFrame` are also defined on
+`DelayedDataFrame` class, so that they behave similarily on
+`DelayedDataFrame` objects.
+
+## Coercion methods
+
+Coercion methods between `DelayedDataFrame` and other data structures
+are defined. When coercing from `ANY` to `DelayedDataFrame`, the
+`lazyIndex` slot will be added automatically, with the initial NULL
+value of indexes for each column.
+
+- From vector
+
+```{r}
+as(letters, "DelayedDataFrame")
+```
+
+- From DataFrame
+
+```{r}
+as(DataFrame(letters), "DelayedDataFrame")
+```
+
+- From list
+```{r}
+(a <- as(list(a=1:5, b=6:10), "DelayedDataFrame"))
+lazyIndex(a)
+```
+
+When coerce `DelayedDataFrame` into other data structure, the
+`lazyIndex` slot will be realized and the new data structure
+returned. For example, when `DelayedDataFrame` is coerced into a
+`DataFrame` object, the `listData` slot will be updated according to
+the `lazyIndex` slot.
+
+
+```{r}
+df1 <- as(ddf1, "DataFrame")
+df1@listData
+dim(df1)
+```
+
+## Subsetting methods
+
+### subsetting by `[`
+
+two-dimensional `[` subsetting on `DelayedDataFrame` objects by
+integer, character, logical values all work.
+
+- integer subscripts. 
+
+```{r, singleSB1}
+ddf[, 1, drop=FALSE]
+```
+
+- character subscripts (column names).
+
+```{r, singleSB2}
+ddf[, "da1", drop=FALSE]
+```
+
+- logical subscripts. 
+
+```{r, singleSB3}
+ddf[, c(TRUE,FALSE,TRUE)]
+```
+
+When subsetting using `[` on an already subsetted `DelayedDataFrame`
+object, the `lazyIndex`, `nrows` and `rownames`(if not NULL) slot will
+be updated.
+
+```{r, singleSB4}
+a <- ddf1[1:4, 2, drop=FALSE]
+lazyIndex(a)
+nrow(a)
+```
+
+### subsetting by `[[`
+
+The `[[` subsetting will take column subscripts for integer or
+character values, and return corresponding columns in it's original
+data format.
+
+```{r, doubleSB}
+ddf[[2]]
+ddf[["da2"]]
+```
+
+## `rbind/cbind`
+
+When doing `rbind`, the `lazyIndex` of input arguments will be
+realized and a new `DelayedDataFrame` with NULL lazyIndex will be
+returned.
+
+```{r, rbind}
+ddf2 <- ddf[6:10, ]
+(ddfrb <- rbind(ddf1, ddf2))
+lazyIndex(ddfrb)
+```
+
+`cbind` of `DelayedDataFrame` objects will keep all existing
+`lazyIndex` of input arguments and carry into the new
+`DelayedDataFrame` object.
+
+```{r, cbind, error=FALSE}
+(ddfcb <- cbind(da0=ddf1[,1], ddf1[, 2:3]))
+## lazyIndex(ddfcb)
+```
+
+# sessionInfo
+
+```{r, sessioninfo}
+sessionInfo()
+```
