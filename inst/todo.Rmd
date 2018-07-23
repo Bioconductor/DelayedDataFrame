@@ -4,7 +4,7 @@
 - .fulllength(LazyIndex(...)), return 0 if listData == NULL.  -- done!
   so .fulllength(LazyIndex()) returns 0 instead of integer(0).  
 - `lazyIndex<-` replacement method. do not update show method for nrows, rownames().   -- done! (specified in @details)
-- DDF constructor, construct DDF for each entry of argument, and cbind(DDF). -- doing!
+- DDF constructor, construct DDF for each entry of argument, and cbind(DDF). -- done!
 - update test_LazyIndex, for .fulllength().   -- done!
   return 0 for LazyIndex(). NULL for NULL (initial) lazyIndex. integer for non-NULL lazyIndex. 
 - reorganize and update test_DDF-class.  -- done! 
