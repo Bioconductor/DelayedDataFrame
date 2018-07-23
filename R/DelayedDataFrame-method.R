@@ -158,7 +158,7 @@ setMethod("extractROWS", "DelayedDataFrame", .extractROWS_DelayedDataFrame)
 #' @param value the new values in the \code{i,j} subscripts of
 #'     \code{DelayedDataFrame} object.
 #' @export
-#' 
+
 setReplaceMethod(
     "[", c("DelayedDataFrame", "ANY"),
     function(x, i, j, ..., value)

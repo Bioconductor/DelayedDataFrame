@@ -87,6 +87,7 @@ setGeneric("lazyIndex", function(x) standardGeneric("lazyIndex"), signature="x")
 #' @aliases lazyIndex lazyIndex,DelayedDataFrame
 #' @description the \code{lazyIndex} slot getter and setter for
 #'     \code{DelayedDataFrame} object.
+#' @export
 setMethod("lazyIndex", "DelayedDataFrame", function(x) x@lazyIndex)
 
 ###-------------

@@ -89,17 +89,46 @@ library(DelayedDataFrame)
 
 ## class extension
 
-`DelayedDataFrame` extends the `DataFrame` data structure, with an additional slot called `lazyIndex`, which saves all the mapping indexes for each column of the data inside `DelayedDataFrame`. It is similar to `data.frame` in terms of construction, subsetting, splitting, combining... The `rownames` are having same feature as `DataFrame`. It will not be given automatically, but only by explicitly specify in the constructor function `DelayedDataFrame(, row.names=...)` or using the slot setter function `rownames()<-`. 
+`DelayedDataFrame` extends the `DataFrame` data structure, with an
+additional slot called `lazyIndex`, which saves all the mapping
+indexes for each column of the data inside `DelayedDataFrame`. It is
+similar to `data.frame` in terms of construction, subsetting,
+splitting, combining... The `rownames` are having same feature as
+`DataFrame`. It will not be given automatically, but only by
+explicitly specify in the constructor function `DelayedDataFrame(,
+row.names=...)` or using the slot setter function `rownames()<-`.
+
+Here we use the [GDSArray][] data as example to show the
+`DelayedDataFrame` characteristics. [GDSArray][] is a _Bioconductor_
+package that represents GDS files as objects derived from the
+[DelayedArray][] package and `DelayedArray` class. It carries the
+on-disk data path and represent the GDS nodes in a
+`DelayedArray`-derived data structure. 
+
+The `GDSArray()` constructor takes 2 arguments: the file path and the
+GDS node name inside the GDS file. 
+
+```{r, GDSArray}
+library(GDSArray)
+file <- SeqArray::seqExampleFileName("gds")
+gdsnodes(file)
+varid <- GDSArray(file, "annotation/id")
+AA <- GDSArray(file, "annotation/info/AA")
+```
+
+We use an ordinary character vector and the `GDSArray` objects to
+construct a `DelayedDataFrame` object.
 
 ```{r, construction}
-da1 <- DelayedArray(array(1:10))
-da2 <- DelayedArray(array(11:30, dim=c(10,2)))
-(ddf <- DelayedDataFrame(da0=letters[1:10], da1=I(da1), da2=I(da2)) )
+ddf <- DelayedDataFrame(varid, AA)
 ```
 
 ## slot accessors
 
-The slots of `DelayedDataFrame` could be accessed by `lazyIndex()`, `nrow()`, `rownames()` (if not NULL) functions. With a newly constructed `DelayedDataFrame` object, the initial value of `lazyIndex` slot will be NULL for all columns. 
+The slots of `DelayedDataFrame` could be accessed by `lazyIndex()`,
+`nrow()`, `rownames()` (if not NULL) functions. With a newly
+constructed `DelayedDataFrame` object, the initial value of
+`lazyIndex` slot will be NULL for all columns.
 
 ```{r, accessors}
 lazyIndex(ddf)
@@ -136,7 +165,7 @@ NULL) are all updated. So the subsetting operation is kind of
 `delayed`.
 
 ```{r, lazyIndex}
-ddf1 <- ddf[1:5,]
+ddf1 <- ddf[1:20,]
 identical(ddf@listData, ddf1@listData)
 lazyIndex(ddf1)
 nrow(ddf1)
@@ -207,13 +236,13 @@ ddf[, 1, drop=FALSE]
 - character subscripts (column names).
 
 ```{r, singleSB2}
-ddf[, "da1", drop=FALSE]
+ddf[, "AA", drop=FALSE]
 ```
 
 - logical subscripts. 
 
 ```{r, singleSB3}
-ddf[, c(TRUE,FALSE,TRUE)]
+ddf[, c(TRUE,FALSE), drop=FALSE]
 ```
 
 When subsetting using `[` on an already subsetted `DelayedDataFrame`
@@ -221,7 +250,7 @@ object, the `lazyIndex`, `nrows` and `rownames`(if not NULL) slot will
 be updated.
 
 ```{r, singleSB4}
-a <- ddf1[1:4, 2, drop=FALSE]
+(a <- ddf1[1:10, 2, drop=FALSE])
 lazyIndex(a)
 nrow(a)
 ```
@@ -233,8 +262,9 @@ character values, and return corresponding columns in it's original
 data format.
 
 ```{r, doubleSB}
-ddf[[2]]
-ddf[["da2"]]
+ddf[[1]]
+ddf[["varid"]]
+identical(ddf[[1]], ddf[["varid"]])
 ```
 
 ## `rbind/cbind`
@@ -244,7 +274,7 @@ realized and a new `DelayedDataFrame` with NULL lazyIndex will be
 returned.
 
 ```{r, rbind}
-ddf2 <- ddf[6:10, ]
+ddf2 <- ddf[21:40, ]
 (ddfrb <- rbind(ddf1, ddf2))
 lazyIndex(ddfrb)
 ```
@@ -254,8 +284,8 @@ lazyIndex(ddfrb)
 `DelayedDataFrame` object.
 
 ```{r, cbind, error=FALSE}
-(ddfcb <- cbind(da0=ddf1[,1], ddf1[, 2:3]))
-## lazyIndex(ddfcb)
+(ddfcb <- cbind(varid = ddf1[,1, drop=FALSE], AA=ddf1[, 2, drop=FALSE]))
+lazyIndex(ddfcb)
 ```
 
 # sessionInfo

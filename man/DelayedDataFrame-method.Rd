@@ -10,7 +10,7 @@
 \alias{extractROWS,DelayedDataFrame-method}
 \alias{[<-,DelayedDataFrame-method}
 \alias{"[<-,DelayedDataFrame-method"}
-\alias{[,DelayedDataFrame-method}
+\alias{[,DelayedDataFrame,ANY-method}
 \alias{"[,DelayedDataFrame-method"}
 \title{DelayedDataFrame related methods.}
 \usage{
@@ -27,7 +27,7 @@
 
 \S4method{[}{DelayedDataFrame}(x, i, j, ...) <- value
 
-\S4method{[}{DelayedDataFrame}(x, i, j, ..., drop = TRUE)
+\S4method{[}{DelayedDataFrame,ANY}(x, i, j, ..., drop = TRUE)
 }
 \arguments{
 \item{x}{\code{as.list,DelayedDataFrame}: a \code{DelayedDataFrame}

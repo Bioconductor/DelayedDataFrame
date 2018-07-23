@@ -1,0 +1,46 @@
+--- 
+title: "DelayedDataFrame"
+author: Qian Liu
+date: "`r Sys.Date()`"
+output: ioslides_presentation
+---
+
+## DelayedDataFrame class
+
+- Extends: DataFrame 
+```{r, DataFrameClass}
+library(DelayedDataFrame)
+(ddf <- DelayedDataFrame())
+slotNames(ddf)
+```
+
+---
+
+Additional slot: lazyIndex()
+Saves the mapping indexes for each column.
+
+```{r, lazyIndex}
+lazyIndex(ddf)
+```
+
+## Constructor: 
+
+Each argument in `...` is coerced to a `DataFrame` and combined column-wise.
+```
+DelayedDataFrame(..., row.names=FALSE, check.names=TRUE)
+```
+
+Example: 
+
+```{r, constructor}
+obj <- DelayedDataFrame(letters, LETTERS, row.names=LETTERS)
+lazyIndex(obj)
+```
+
+--- 
+By changing `lazyIndex` slot, the `DelayedDataFrame` will update.
+```{r lazyIndexSetter}
+lazyIndex(obj) <- LazyIndex(listData=list(1:5), index=rep(1L, 2))
+obj
+```
+

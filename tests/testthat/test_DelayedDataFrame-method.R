@@ -230,9 +230,8 @@ test_that("cbind,DelayedDataFrame works", {
 
     expect_equivalent(obj, cbind(obj[1:2], obj[3:4]))
     expect_equivalent(obj[1:10, ], cbind(obj[1:10, 1:2], obj[1:10, 3:4]))
-
-    cbind(obj[1:10, 1:2], da2[sample(10), ])  ## expect return DDF, with original index. 
 })
+
 test_that("rbind,DelayedDataFrame works", {
     da0 <- DelayedArray(array(1:26, 26))
     da1 <- DelayedArray(matrix(1:26, 26, 1))
