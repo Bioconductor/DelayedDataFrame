@@ -154,7 +154,7 @@ setMethod(
 setMethod("extractROWS", "DelayedDataFrame", .extractROWS_DelayedDataFrame)
 
 #' @rdname DelayedDataFrame-method
-#' @aliases "[<-,DelayedDataFrame-method"
+#' @aliases "[<-" "[<-,DelayedDataFrame-method"
 #' @param value the new values in the \code{i,j} subscripts of
 #'     \code{DelayedDataFrame} object.
 #' @export
@@ -176,7 +176,7 @@ setReplaceMethod(
 })
 
 #' @rdname DelayedDataFrame-method
-#' @aliases "[,DelayedDataFrame-method"
+#' @aliases "[" "[,DelayedDataFrame-method"
 #' @param i row subscript
 #' @param j col subscript
 #' @param drop if drop with reduced dimension, default is TRUE.

@@ -1,7 +1,6 @@
 Package: DelayedDataFrame
-Title: Delayed operation on DataFrame with lazyIndex for each columns, using
-    standard DataFrame metaphor
-Version: 0.2.0
+Title: Delayed operation on DataFrame using standard DataFrame metaphor
+Version: 0.99.0
 Authors@R: c(
     person(
         "Qian", "Liu", email = "Qian.Liu@roswellpark.org", role=c("aut", "cre")
