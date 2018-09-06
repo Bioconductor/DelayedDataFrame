@@ -14,29 +14,61 @@ output: ioslides_presentation
 ```{r, DataFrameClass}
 library(DelayedDataFrame)
 (ddf <- DelayedDataFrame())
-slotNames(ddf)
 ```
 
 - `lazyIndex` slot  
 Saves the mapping indexes for each column.
 
+```{r, nulllist}
+lazyIndex(ddf)
+```
+
 ## Constructor: 
 
-Each argument in `...` is coerced to a `DataFrame` and combined column-wise.
+Each argument in "`...`" is coerced to a `DataFrame` and combined column-wise.
 ```
 DelayedDataFrame(..., row.names=FALSE, check.names=TRUE)
 ```
 
 ```{r, constructor}
-obj <- DelayedDataFrame(letters, LETTERS, row.names=LETTERS)
+(obj <- DelayedDataFrame(letters, LETTERS, row.names=LETTERS))
+```
+--- 
+
+```{r, constructor1}
 lazyIndex(obj)
 ```
 
 ## On-disk data representation in `DataFrame` format
 
+- Genomic Data Structure (GDS)  
+
+CoreArray Genomic Data Structure (GDS) is designed for large-scale
+datasets (for available random-access memory). The _Bioconductor_
+package `gdsfmt` has provided a high-level R interface to GDS.
+
+--- 
+
+
+```{r GDS}
+file <- SeqArray::seqExampleFileName("gds")
+f <- gdsfmt::openfn.gds(file)
+f
+```
+
+```{r GDSclose, echo=FALSE}
+closefn.gds(f)
+```
+
+---
+
+- GDSArray  
+
+`GDSArray` is an _R_ and _Bioconductor_ package, that represents GDS
+files as `DelayedArray` instances.
+
 ```{r, GDSArray}
 library(GDSArray)
-file <- SeqArray::seqExampleFileName("gds")
 gdsnodes(file)
 ```
 
@@ -49,6 +81,11 @@ varid <- GDSArray(file, "annotation/id")
 AA <- GDSArray(file, "annotation/info/AA")
 ```
 
+```{r, GDSArray2}
+varid
+```
+
+--- 
 ```{r, GDSArrayStr, tidy=TRUE}
 seed(varid)
 ```
@@ -87,3 +124,10 @@ nrow(ddf1)
 as(ddf1, "DataFrame")
 ```
 
+## Availability
+
+The development version is available to download through github: 
+
+```{r getDevel, eval=FALSE}
+devtools::install_github("Bioconductor/DelayedDataFrame")
+```

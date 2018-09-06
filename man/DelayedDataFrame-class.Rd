@@ -5,14 +5,12 @@
 \alias{DelayedDataFrame}
 \alias{.DelayedDataFrame}
 \alias{DelayedDataFrame-class}
-\alias{DelayedDataFrame}
 \alias{lazyIndex,DelayedDataFrame-method}
 \alias{lazyIndex}
 \alias{lazyIndex,DelayedDataFrame}
 \alias{coerce}
 \alias{coerce,DataFrame,DelayedDataFrame-method}
 \alias{coerce,DelayedDataFrame,DataFrame-method}
-\alias{coerce}
 \alias{coerce,ANY,DelayedDataFrame-method}
 \alias{lazyIndex<-}
 \alias{lazyIndex<-,DelayedDataFrame-method}

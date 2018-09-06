@@ -8,9 +8,9 @@
 \alias{bindROWS,DelayedDataFrame-method}
 \alias{extractROWS,DelayedDataFrame,ANY-method}
 \alias{extractROWS,DelayedDataFrame-method}
-\alias{[<-,DelayedDataFrame-method}
+\alias{[<-,DelayedDataFrame,ANY,ANY,ANY-method}
 \alias{"[<-,DelayedDataFrame-method"}
-\alias{[,DelayedDataFrame,ANY-method}
+\alias{[,DelayedDataFrame,ANY,ANY,ANY-method}
 \alias{"[,DelayedDataFrame-method"}
 \title{DelayedDataFrame related methods.}
 \usage{
@@ -20,14 +20,14 @@
 
 \S4method{cbind}{DelayedDataFrame}(..., deparse.level = 1)
 
-\S4method{bindROWS}{DelayedDataFrame}(x, objects = list(), use.names = TRUE,
-  ignore.mcols = FALSE, check = TRUE)
+\S4method{bindROWS}{DelayedDataFrame}(x, objects = list(),
+  use.names = TRUE, ignore.mcols = FALSE, check = TRUE)
 
 \S4method{extractROWS}{DelayedDataFrame,ANY}(x, i)
 
-\S4method{[}{DelayedDataFrame}(x, i, j, ...) <- value
+\S4method{[}{DelayedDataFrame,ANY,ANY,ANY}(x, i, j, ...) <- value
 
-\S4method{[}{DelayedDataFrame,ANY}(x, i, j, ..., drop = TRUE)
+\S4method{[}{DelayedDataFrame,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
 }
 \arguments{
 \item{x}{\code{as.list,DelayedDataFrame}: a \code{DelayedDataFrame}
@@ -76,6 +76,4 @@ colnames of \code{DelayedDataFrame}
     lazyIndex's if inputs have any DelayedDataFrame
     objects. Otherwise, return a new DelayedDataFrame with NULL
     lazyIndexes.
-
-bindROWS is the lower-level function for \code{rbind}.
 }
