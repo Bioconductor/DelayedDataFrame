@@ -69,13 +69,6 @@ setMethod("names", "DelayedDataFrame", function(x)
     ## rownames, nrows
     ans <- initialize(x, listData = new_listData, lazyIndex = new_lazyIndex)
     ans
-    ## for (i in seq_len(length(objects))) {
-    ##     y <- as(objects[[i]], "DelayedDataFrame")
-    ##     y <- objects[[i]]
-    ##     lazyIndex(x) <- bindROWS(lazyIndex(x), lazyIndex(y))
-    ## }
-    ## validObject(x) ## ncol(x) != .index(lazyIndex(x))
-    ## callNextMethod()
 }
 
 #' @rdname DelayedDataFrame-method
@@ -95,14 +88,8 @@ setMethod("names", "DelayedDataFrame", function(x)
 
 setMethod("cbind", "DelayedDataFrame", function(..., deparse.level = 1)
 {
-    ## browser()
     objects <- list(...)
     isDDF <- vapply(unname(objects), is, logical(1), "DelayedDataFrame")
-    ## if (!any(isDDF))
-    ##     callNextMethod()
-    ## if (!is(objects[[1]], "DelayedDataFrame"))
-    ##     stop(paste('there must be at least one "DelayedDataFrame"',
-    ##                'object to have "cbind,DelayedDataFrame" work.')
     for (i in which(!isDDF)){
         a <- as(objects[[i]], "DelayedDataFrame")
         objects[[i]] <- a
@@ -143,15 +130,15 @@ setMethod(
     if (!is.null(rownames))
         rownames <- make.unique(rownames)
 
-    initialize(
-        x, lazyIndex = lazyIndex(x)[i,], nrows = length(i), rownames = rownames
-    )
+    initialize(x, lazyIndex = lazyIndex(x)[i,],
+               nrows = length(i), rownames = rownames)
 }
 #' @importFrom stats setNames
 #' @exportMethod extractROWS
 #' @aliases extractROWS,DelayedDataFrame-method
 #' @rdname DelayedDataFrame-method
-setMethod("extractROWS", "DelayedDataFrame", .extractROWS_DelayedDataFrame)
+setMethod("extractROWS", "DelayedDataFrame",
+          .extractROWS_DelayedDataFrame)
 
 #' @rdname DelayedDataFrame-method
 #' @aliases "[<-" "[<-,DelayedDataFrame-method"

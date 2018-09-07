@@ -55,8 +55,8 @@ so that they are.}
 \code{DelayedDataFrame} object.}
 }
 \value{
-\code{lazyIndex<-}: the \code{DelayedDataFrame} object with new value of
-    \code{lazyIndex} slot.
+\code{lazyIndex<-}: the \code{DelayedDataFrame} object with
+    new value of \code{lazyIndex} slot.
 }
 \description{
 The \code{DelayedDataFrame} class extends the
@@ -82,4 +82,12 @@ Please be very careful to use this replace method for
     \code{lazyIndex} slot, but not necessarily the \code{nrow} and
     \code{rownames} slots. If you want to have synchronized
     subsetting for all slots, the \code{[} method should be used.
+}
+\examples{
+DDF <- DelayedDataFrame(letters, LETTERS)
+DDF1 <- DDF[1:10,]
+DDF1
+lazyIndex(DDF1)
+as(DDF1, "DataFrame")
+
 }

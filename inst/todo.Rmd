@@ -1,3 +1,14 @@
+## before submission (09/07/2018)
+1. do extra check: 
+```{r}
+setMethod("cbind", "DelayedDataFrame", function(..., deparse.level = 1)
+ if (!any(isDDF))
+     callNextMethod()
+ if (!is(objects[[1]], "DelayedDataFrame"))
+     stop(paste('there must be at least one "DelayedDataFrame"',
+                'object to have "cbind,DelayedDataFrame" work.')
+```	
+
 5/11/2018, review code with Herve & Daniel:
 
 ## DelayedDataFrame code polish. 
