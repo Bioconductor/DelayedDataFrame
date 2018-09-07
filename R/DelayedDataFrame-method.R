@@ -204,10 +204,10 @@ setMethod("[", c("DelayedDataFrame", "ANY", "ANY", "ANY"),
             xstub <- setNames(seq_along(x), names(x))
             j <- normalizeSingleBracketSubscript(j, xstub)
         }
-        x <- initialize(
-            x, lazyIndex = lazyIndex(x)[j], listData = extractROWS(x@listData, j),
-            elementMetadata = extractROWS(mcols(x), j)
-        )
+        x <- initialize(x,
+                        lazyIndex = lazyIndex(x)[j],
+                        listData = extractROWS(x@listData, j),
+                        elementMetadata = extractROWS(mcols(x), j))
         if (anyDuplicated(names(x))) 
             names(x) <- make.unique(names(x))
         if (list_style_subsetting) 

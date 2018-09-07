@@ -48,13 +48,15 @@ LazyIndex <-
         msg <- c(msg, "'.index(x)' must be of same length or 'NULL'")
     ## index slot must be consistent with all listData elements.
     if (!setequal(.index(x), seq_along(.listData(x))))
-        msg <- c(msg, "'.index(x)' and 'seq_along(.listData(x))' are not equal")
+        msg <- c(msg,
+                 "'.index(x)' and 'seq_along(.listData(x))' are not equal")
     if (length(msg)) msg else TRUE
 }
 
 setValidity2("LazyIndex", .validate_LazyIndex)
 
-.fulllength <- function(x) {  ## dim(), rectangular., concatenateObject (works as cbind)
+.fulllength <- function(x) {  ## dim(), rectangular.,
+                              ## concatenateObject (works as cbind)
     if (length(x) == 0)
         return(0)
     indexes <- .listData(x)

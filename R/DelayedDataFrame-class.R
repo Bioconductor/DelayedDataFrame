@@ -53,7 +53,7 @@
 #'     so that they are.
 #' @export
 #' @import S4Vectors
-#' @example
+#' @examples
 #' DDF <- DelayedDataFrame(letters, LETTERS)
 #' DDF1 <- DDF[1:10,]
 #' DDF1
@@ -81,8 +81,8 @@ DelayedDataFrame <- function(..., row.names=NULL, check.names=TRUE)
 ## accessor
 ###-------------
 
-setGeneric("lazyIndex", signature = "x",
-           function(x) standardGeneric("lazyIndex"))
+setGeneric("lazyIndex", signature = "x", function(x)
+    standardGeneric("lazyIndex"))
 
 #' @rdname DelayedDataFrame-class
 #' @aliases lazyIndex lazyIndex,DelayedDataFrame
