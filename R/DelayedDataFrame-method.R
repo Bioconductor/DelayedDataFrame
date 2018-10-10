@@ -58,16 +58,14 @@ setMethod("names", "DelayedDataFrame", function(x)
 ### cbind,DDF will keep and cbind the old lazyIndexes.
 .cbind_DDF <- function(x, objects = list())
 {
-    ## browser()
     lazyIndex_objects <- lapply(objects, lazyIndex)
     new_lazyIndex <- .cbind_lazyIndex(lazyIndex(x), lazyIndex_objects)
-    listData_objects <- c()
-    for (i in seq_along(objects)) {
-        listData_objects <- c(listData_objects, objects[[i]]@listData)
-    }
+    listData_objects <- do.call(c, lapply(objects, function(x) x@listData))
     new_listData <- c(x@listData, listData_objects)
     ## rownames, nrows
-    ans <- initialize(x, listData = new_listData, lazyIndex = new_lazyIndex)
+    ## ans <- initialize(x, listData = new_listData, lazyIndex = new_lazyIndex)
+    ans <- BiocGenerics:::replaceSlots(x, listData = new_listData,
+                                       lazyIndex = new_lazyIndex)
     ans
 }
 

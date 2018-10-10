@@ -35,19 +35,19 @@ options(showTailLines=3)
 
 As the genetic/genomic data are having increasingly larger profile,
 the annotation file are also getting much bigger than expected. the
-memory space in R has been an obstable for fast and efficient data
+memory space in _R_ has been an obstable for fast and efficient data
 processing, because most available _R_ or _Bioconductor_ packages are
 developed based on in-memory data manipulation. With some newly
-developed data structure as [HDF5][] or [GDS][], and the R interface of
-[DelayedArray][] to represent on-disk data structures with different
-back-end in R-user-friendly array data structure (e.g.,
+developed data structure as [HDF5][] or [GDS][], and the _R_ interface
+of [DelayedArray][] to represent on-disk data structures with
+different back-end in _R_-user-friendly array data structure (e.g.,
 [HDF5Array][],[GDSArray][]), the high-throughput genetic/genomic data
-are now being able to easily loaded and manipulated within R. However,
-the annotation files for the samples and features inside the
-high-through data are also getting unexpectedly larger than
+are now being able to easily loaded and manipulated within
+_R_. However, the annotation files for the samples and features inside
+the high-through data are also getting unexpectedly larger than
 before. With an ordinary `data.frame` or `DataFrame`, it is still
 getting more and more challenging for any analysis to be done within
-R. So here we have developed the `DelayedDataFrame`, which has the
+_R_. So here we have developed the `DelayedDataFrame`, which has the
 very similar characteristics as `data.frame` and `DataFrame`. But at
 the same time, all column data could be optionally saved on-disk
 (e.g., in [DelayedArray][] structure with any back-end). Common
@@ -55,8 +55,8 @@ operations like constructing, subsetting, splitting, combining could
 be done in the same way as `DataFrame`. This feature of
 `DelayedDataFrame` could enable efficient on-disk reading and
 processing of the large-scale annotation files, and at the same,
-signicantly saves memory space with common `DataFrame` metaphor in
-_R_ and _Bioconductor_.
+signicantly saves memory space with common `DataFrame` metaphor in _R_
+and _Bioconductor_.
 
 [HDF5]: https://www.hdfgroup.org/solutions/hdf5/
 [GDS]: http://corearray.sourceforge.net/
@@ -66,7 +66,7 @@ _R_ and _Bioconductor_.
 
 
 # Installation
-Download the package from Bioconductor: 
+Download the package from _Bioconductor_: 
 
 ```{r getPackage, eval=FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE))
@@ -77,9 +77,9 @@ BiocManager::install("DelayedDataFrame")
 The development version is also available to download through github: 
 
 ```{r getDevel, eval=FALSE}
-devtools::install_github("Bioconductor/DelayedDataFrame")
+BiocManager::install("Bioconductor/DelayedDataFrame")
 ```
-Load the package into R session before using:
+Load the package into _R_ session before using:
 
 ```{r Load, message=FALSE, warning=FALSE}
 library(DelayedDataFrame)
@@ -103,7 +103,7 @@ Here we use the [GDSArray][] data as example to show the
 package that represents GDS files as objects derived from the
 [DelayedArray][] package and `DelayedArray` class. It carries the
 on-disk data path and represent the GDS nodes in a
-`DelayedArray`-derived data structure. 
+`DelayedArray`-derived data structure.
 
 The `GDSArray()` constructor takes 2 arguments: the file path and the
 GDS node name inside the GDS file. 
