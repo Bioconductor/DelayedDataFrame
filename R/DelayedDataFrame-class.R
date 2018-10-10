@@ -62,7 +62,6 @@
 #' 
 DelayedDataFrame <- function(..., row.names=NULL, check.names=TRUE)
 {
-    browser()
     listData <- list(...)
     isDDF <- vapply(unname(listData), is, logical(1), "DelayedDataFrame")
     if (length(listData) && any(isDDF)) {
@@ -110,7 +109,6 @@ setMethod("lazyIndex", "DelayedDataFrame", function(x) x@lazyIndex)
 
 setAs("DataFrame", "DelayedDataFrame", function(from)
 {
-    browser()
     ldf <- length(from)
     lazyIndex <- .LazyIndex(vector("list", as.numeric(as.logical(ldf))),
                             index=rep(1L, length(from)))

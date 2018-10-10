@@ -106,10 +106,9 @@ setMethod("cbind", "DelayedDataFrame", function(..., deparse.level = 1)
 #'     \code{bindROWS,DelayedDataFrame}.
 #' @param check Logical. This argument is ignored for
 #'     \code{bindROWS,DelayedDataFrame}.
-setMethod(
-    "bindROWS", "DelayedDataFrame",
-    function(x, objects = list(), use.names = TRUE,
-             ignore.mcols = FALSE, check = TRUE)
+setMethod("bindROWS", "DelayedDataFrame",
+          function(x, objects = list(), use.names = TRUE,
+                   ignore.mcols = FALSE, check = TRUE)
     {
         ans <- callNextMethod()
         lazyIndex(ans) <- LazyIndex(vector("list", 1), rep(1L, ncol(x)))
