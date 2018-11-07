@@ -131,7 +131,6 @@ setMethod("bindROWS", "DelayedDataFrame",
                nrows = length(i), rownames = rownames)
 }
 #' @importFrom stats setNames
-#' @exportMethod extractROWS
 #' @aliases extractROWS,DelayedDataFrame-method
 #' @rdname DelayedDataFrame-method
 setMethod("extractROWS", "DelayedDataFrame",

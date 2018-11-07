@@ -66,9 +66,9 @@ DelayedDataFrame <- function(..., row.names=NULL, check.names=TRUE)
     isDDF <- vapply(unname(listData), is, logical(1), "DelayedDataFrame")
     if (length(listData) && any(isDDF)) {
         ans <- do.call(cbind, listData)
-    } else {
-        df <- DataFrame(..., row.names=row.names, check.names=check.names)
-        ans <- as(df, "DelayedDataFrame")
+        names(ans) <- make.names(names(ans), unique = TRUE)
+    } else { 
+        ans <- DataFrame(..., row.names=row.names, check.names=check.names)
     }
     if (!is(ans, "DelayedDataFrame"))
         ans <- as(ans, "DelayedDataFrame")
