@@ -62,8 +62,6 @@ setMethod("names", "DelayedDataFrame", function(x)
     new_lazyIndex <- .cbind_lazyIndex(lazyIndex(x), lazyIndex_objects)
     listData_objects <- do.call(c, lapply(objects, function(x) x@listData))
     new_listData <- c(x@listData, listData_objects)
-    ## rownames, nrows
-    ## ans <- initialize(x, listData = new_listData, lazyIndex = new_lazyIndex)
     ans <- BiocGenerics:::replaceSlots(x, listData = new_listData,
                                        lazyIndex = new_lazyIndex)
     ans

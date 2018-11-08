@@ -66,15 +66,19 @@ DelayedDataFrame <- function(..., row.names=NULL, check.names=TRUE)
     isDDF <- vapply(unname(listData), is, logical(1), "DelayedDataFrame")
     if (length(listData) && any(isDDF)) {
         ans <- do.call(cbind, listData)
-        names(ans) <- make.names(names(ans), unique = TRUE)
+        if (check.names)
+            names(ans) <- make.names(names(ans), unique = TRUE)
     } else { 
         ans <- DataFrame(..., row.names=row.names, check.names=check.names)
     }
-    if (!is(ans, "DelayedDataFrame"))
-        ans <- as(ans, "DelayedDataFrame")
+    ans <- as(ans, "DelayedDataFrame", strict = FALSE)
     ans
 }
-### FIXME: the "check.names" in constructor is not working here yet. 
+### https://github.com/Bioconductor/Contributions/issues/861#issuecomment-436836411
+### removing `cbind` inside constructor.
+### define `cbind2()` instead of `.cbind_DDF()`? 
+### column names consistency for data.frame and DataFrame? ... 
+### remove `DataFrame()` calls from constructor. 
 
 ###-------------
 ## accessor
