@@ -131,8 +131,33 @@ setMethod("bindROWS", "DelayedDataFrame",
 #' @importFrom stats setNames
 #' @aliases extractROWS,DelayedDataFrame-method
 #' @rdname DelayedDataFrame-method
+#' @export
 setMethod("extractROWS", "DelayedDataFrame",
           .extractROWS_DelayedDataFrame)
+
+.extractCOLS_DelayedDataFrame <- function(x, i)
+{
+    if (!is(i, "IntegerRanges")) {
+        xstub <- setNames(seq_along(x), names(x))
+        i <- normalizeSingleBracketSubscript(i, xstub)
+    }
+    new_listData <- extractROWS(x@listData, i)
+    new_mcols <- extractROWS(mcols(x, use.names=FALSE), i)
+    new_lazyIndex <- lazyIndex(x)[i]
+    x <- initialize(x,
+                    lazyIndex = new_lazyIndex,
+                    listData = new_listData,
+                    elementMetadata = new_mcols)
+    if (anyDuplicated(names(x))) 
+        names(x) <- make.unique(names(x))
+    x
+}
+
+#' @aliases extractCOLS,DelayedDataFrame-method
+#' @rdname DelayedDataFrame-method
+#' @export
+setMethod("extractCOLS", "DelayedDataFrame",
+          .extractCOLS_DelayedDataFrame)
 
 #' @rdname DelayedDataFrame-method
 #' @aliases "[<-" "[<-,DelayedDataFrame-method"
@@ -141,19 +166,21 @@ setMethod("extractROWS", "DelayedDataFrame",
 #' @export
 
 setReplaceMethod(
-    "[", c("DelayedDataFrame", "ANY"),
+    "[", c("DelayedDataFrame", "ANY", "ANY", "ANY"),
     function(x, i, j, ..., value)
 {
+    browser()
     xstub <- setNames(seq_along(x), names(x))
-    if (missing(j)) {
+    if (missing(j)) {  ## whole-column replacement
         j <- normalizeSingleBracketSubscript(i, xstub)
         lazyIndex(x) <- .update_index(lazyIndex(x), j, NULL)
-    } else {
+    } else {  ## row-col replacement
         j <- normalizeSingleBracketSubscript(j, xstub)
         x@listData[j] <- lapply(j, function(j, x) x[[j]], x)
         lazyIndex(x) <- .update_index(lazyIndex(x), j, NULL)
     }
     callNextMethod()
+    
 })
 
 #' @rdname DelayedDataFrame-method
@@ -181,16 +208,7 @@ setMethod("[", c("DelayedDataFrame", "ANY", "ANY", "ANY"),
                 return(x)
             j <- i
         }
-        if (!is(j, "IntegerRanges")) {
-            xstub <- setNames(seq_along(x), names(x))
-            j <- normalizeSingleBracketSubscript(j, xstub)
-        }
-        x <- initialize(x,
-                        lazyIndex = lazyIndex(x)[j],
-                        listData = extractROWS(x@listData, j),
-                        elementMetadata = extractROWS(mcols(x), j))
-        if (anyDuplicated(names(x))) 
-            names(x) <- make.unique(names(x))
+        x <- extractCOLS(x, j)
         if (list_style_subsetting) 
             return(x)
     }

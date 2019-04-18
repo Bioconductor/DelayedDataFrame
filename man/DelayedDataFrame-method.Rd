@@ -8,6 +8,7 @@
 \alias{bindROWS,DelayedDataFrame-method}
 \alias{extractROWS,DelayedDataFrame,ANY-method}
 \alias{extractROWS,DelayedDataFrame-method}
+\alias{extractCOLS,DelayedDataFrame-method}
 \alias{[<-,DelayedDataFrame,ANY,ANY,ANY-method}
 \alias{"[<-"}
 \alias{"[<-,DelayedDataFrame-method"}
@@ -26,6 +27,8 @@
   use.names = TRUE, ignore.mcols = FALSE, check = TRUE)
 
 \S4method{extractROWS}{DelayedDataFrame,ANY}(x, i)
+
+\S4method{extractCOLS}{DelayedDataFrame}(x, i)
 
 \S4method{[}{DelayedDataFrame,ANY,ANY,ANY}(x, i, j, ...) <- value
 
