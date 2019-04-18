@@ -6,6 +6,7 @@
 \alias{.LazyIndex}
 \alias{LazyIndex}
 \alias{cbind,LazyIndex-method}
+\alias{[,LazyIndex,ANY,ANY,ANY-method}
 \alias{[,LazyIndex-method}
 \title{The \code{LazyIndex} class and methods.}
 \usage{
@@ -13,7 +14,7 @@ LazyIndex(listData = list(), index = integer())
 
 \S4method{cbind}{LazyIndex}(..., deparse.level = 1)
 
-\S4method{[}{LazyIndex}(x, i, j, ..., drop = TRUE)
+\S4method{[}{LazyIndex,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
 }
 \arguments{
 \item{listData}{the list data for all mapping indexes that are used in

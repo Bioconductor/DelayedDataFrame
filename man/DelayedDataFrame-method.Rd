@@ -8,10 +8,10 @@
 \alias{bindROWS,DelayedDataFrame-method}
 \alias{extractROWS,DelayedDataFrame,ANY-method}
 \alias{extractROWS,DelayedDataFrame-method}
-\alias{[<-,DelayedDataFrame-method}
+\alias{[<-,DelayedDataFrame,ANY,ANY,ANY-method}
 \alias{"[<-"}
 \alias{"[<-,DelayedDataFrame-method"}
-\alias{[,DelayedDataFrame-method}
+\alias{[,DelayedDataFrame,ANY,ANY,ANY-method}
 \alias{"["}
 \alias{"[,DelayedDataFrame-method"}
 \title{DelayedDataFrame related methods.}
@@ -27,9 +27,9 @@
 
 \S4method{extractROWS}{DelayedDataFrame,ANY}(x, i)
 
-\S4method{[}{DelayedDataFrame}(x, i, j, ...) <- value
+\S4method{[}{DelayedDataFrame,ANY,ANY,ANY}(x, i, j, ...) <- value
 
-\S4method{[}{DelayedDataFrame}(x, i, j, ..., drop = TRUE)
+\S4method{[}{DelayedDataFrame,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
 }
 \arguments{
 \item{x}{\code{as.list,DelayedDataFrame}: a \code{DelayedDataFrame}

@@ -17,7 +17,7 @@ Description: Based on the standard DataFrame metaphor, we are trying
     constructor OR as.list() is invoked.
 biocViews: Infrastructure, DataRepresentation
 Depends:
-    R (>= 3.5),
+    R (>= 3.6),
     S4Vectors (>= 0.19.12),
     DelayedArray (>= 0.7.5)
 License: GPL-3
@@ -28,7 +28,7 @@ Imports:
     methods,
     stats,
     BiocGenerics
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 Suggests:
     testthat,
     knitr,

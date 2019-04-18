@@ -115,7 +115,7 @@ setAs("DataFrame", "DelayedDataFrame", function(from)
 {
     ldf <- length(from)
     lazyIndex <- .LazyIndex(vector("list", as.numeric(as.logical(ldf))),
-                            index=rep(1L, length(from)))
+                            index=rep(1L, ldf))
     .DelayedDataFrame(from, lazyIndex = lazyIndex)
     
 })
