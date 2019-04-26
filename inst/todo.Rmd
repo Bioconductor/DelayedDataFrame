@@ -1,3 +1,65 @@
+with new updates in S4Vectors, 
+1. define `extractCOLS` for `SQLDataFrame`, and apply to `[` method. -- done!
+2. add `replaceCOLS`  -- done!
+3. add `mergeROWS` -- added! 
+- `[<-`,DataFrame => mergeROWS => .subassign_columns
+4. `replaceROWS`? 
+3. `replaceROWS` (lower-level), `mergeROWS` are newly added and they
+   call `.subassign_columns` (newly added). `mergeROWS` calls
+   `.make_rownames` which was re-written by adding `nsbs`
+   argument. `.make_rownames <- function(x, i, nsbs,
+   value)`. `.make_rownames` calls `replaceROWS`.  See
+   `R/subsetting-utils.R` for `recycleSingleBracketReplacementValue()`
+   function. See `R/DataFrame-class.R` for
+   `normalizeSingleBracketReplacementValue()` function. See
+   `R/Vector-class.R` for implementation examples.
+3. debug, update `[<-` method and fix test
+errors. `setReplaceMethod("[", "DataFrame")` calls
+`normalizeSingleBracketReplacementValue` & `replaceCOLS`,
+`recycleSingleBracketReplacementValue()` & `.add_missing_columns` &
+`mergeROWS`.
+4. `R/subsetting-utils.R`: 
+- `setMethod("complement", "NSBS", function(x)` is newly added generic
+   and method for `NSBS`.
+-  `setGeneric("normalizeSingleBracketReplacementValue",
+   signature="x", function(value, x)`
+- `recycleSingleBracketReplacementValue<-function(value, x, i)` newly added. 
+- 5 internal generics to ease implementation of [ and [<- subsetting
+  for `Vector` and `DataFrame` subclasses: `extractROWS(), replaceROWS(),
+  mergeROWS(), extractCOLS(), replaceCOLS()`. 
+- `mergeROWS()` is a composition of `replaceROWS()` and `bindROWS()`
+  to support appending in `[<-()`. Vector subclasses never need to
+  implement `mergeROWS()`, but a custom method may be useful for
+  e.g. optimization.
+```
+setGeneric("mergeROWS", signature=c("x", "i"),
+    function(x, i, value) standardGeneric("mergeROWS")
+)
+setGeneric("extractCOLS", signature=c("x", "i"),
+    function(x, i) standardGeneric("extractCOLS")
+)
+
+setGeneric("replaceCOLS", signature=c("x", "i"),
+    function(x, i, value) standardGeneric("replaceCOLS")
+)
+default_replaceROWS <- function(x, i, value)
+{
+    mergeROWS(x, i, value)
+}
+default_mergeROWS <- function(x, i, value)
+setMethod("replaceROWS", c("ANY", "ANY"), default_replaceROWS)
+setMethod("mergeROWS", c("ANY", "ANY"), default_mergeROWS)
+		   
+```
+
+### git log commits before the refactoring of `[`, `[<-`, ...
+<!-- commit 915e73cae05f0d08f33ab0e01770324799922a1e -->
+<!-- Author: Hervé Pagès <hpages@fredhutch.org> -->
+<!-- Date:   Thu Mar 14 19:58:00 2019 -0700 -->
+<!--     More optimization to the extract_character_from_raw_by_*() utilities -->
+	
+
+
 ## before submission (09/07/2018)
 1. do extra check: 
 ```{r}

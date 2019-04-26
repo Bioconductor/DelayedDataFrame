@@ -161,49 +161,40 @@ setMethod("extractCOLS", "DelayedDataFrame",
 
 #' @rdname DelayedDataFrame-method
 #' @aliases replaceCOLS,DelayedDataFrame-method
-#' @param value the new values to replace the \code{ith} column of
+#' @param value the new values in the \code{i,j} subscripts of
 #'     \code{DelayedDataFrame} object.
 #' @export
 
-## Called by the new `setReplaceMethod("[")`. Also need to add
-## `.add_missing_columns` `recycleSingleBracketReplacementValue` and
-## `mergeROWS` before the replacement method works.
-
-## expect to replace @listData[i] with "value", and update
-## lazyIndex(x)[i] with NULL. What if the length() doesn't match? try to see. 
-da0 <- DelayedArray(array(1:26, 26))
-obj <- DelayedDataFrame(letters, da0 = I(da0))
-obj1 <- obj[1:10, ]
-obj2 <- replaceCOLS(obj1, 1, DataFrame(LETTERS))
-
 setMethod("replaceCOLS", c("DelayedDataFrame", "ANY"), function(x, i, value) {
-    browser()
-    stopifnot(is.null(value) || is(value, "DataFrame")) ## FIXME: why value is `DataFrame`?
-    ## sl <- as(x, "SimpleList")  ## FIXME: why "SimpleList"? why not "list"? 
+    stopifnot(is.null(value) || is(value, "DataFrame"))
+    if (!is(i, "IntegerRanges")) {
+        xstub <- setNames(seq_along(x), names(x))
+        i <- normalizeSingleBracketSubscript(i, xstub)
+    }
+   
     new_listData <- x@listData
-    ## value_sl <- if (!is.null(value)) as(value, "SimpleList")
-
     ## truncate if `value` is longer than the nrow(x). 
     ## only replace the ith item in @listData. 
     if (nrow(value) < nrow(x)) {
         stop("The new value doesn't match the row dimension of 'x'")
     } else if (nrow(value) > nrow(x)) {
-        message("the dimension of new value doesn't match the row dimension of 'x'",
-                " and will be truncated!")
+        message("the dimension of new value doesn't match the",
+                " row dimension of 'x' and will be truncated!")
         value_listData <- as.list(value[seq_len(nrow(x)), , drop=FALSE])
     } else {
         value_listData <- as.list(value)
     }
     if (missing(i)) {
-        new_listData <- value_sl
-        new_lazyIndex <- .LazyIndex(vector("list", as.numeric(as.logical(length(x)))),
-                            index=rep(1L, length(x)))
+        new_listData <- value_listData
+        new_lazyIndex <- .LazyIndex(
+            vector("list", as.numeric(as.logical(length(x)))),
+            index=rep(1L, length(x)))
     }
     else {
         new_listData[i] <- value_listData
         new_lazyIndex <- .update_index(lazyIndex(x), i, NULL)
     }
-    ## disable the `fill_short_columns` since columns could be `DelayedArray` objects...  
+    ## disable the `fill_short_columns` since columns could be `DelayedArray` objects.
     ## max_len <- max(lengths(new_listData), nrow(x))
     ## sl <- S4Vectors:::.fill_short_columns(sl, max_len)  ## no need to change. 
     max_len <- nrow(x)
@@ -212,34 +203,33 @@ setMethod("replaceCOLS", c("DelayedDataFrame", "ANY"), function(x, i, value) {
     ## names(new_listData) <- S4Vectors:::.make_colnames(new_listData, i, length(x), value) 
     ri <- seq_len(max_len)
     initialize(x, listData = new_listData, lazyIndex = new_lazyIndex,
-               rownames=S4Vectors:::.make_rownames(x, ri, ri, value) ## keep temporarily. 
+               rownames=S4Vectors:::.make_rownames(x, ri, ri, value)
+               ## keep temporarily. 
                ## .make_rownames called "replaceROWS", will check later
                ## nrows=max_len
                )
 })
 
 #' @rdname DelayedDataFrame-method
-#' @aliases "[<-" "[<-,DelayedDataFrame-method"
-#' @param value the new values in the \code{i,j} subscripts of
-#'     \code{DelayedDataFrame} object.
+#' @aliases mergeROWS,DelayedDataFrame-method
 #' @export
 
-setReplaceMethod(
-    "[", c("DelayedDataFrame", "ANY", "ANY", "ANY"),
-    function(x, i, j, ..., value)
+setMethod(mergeROWS, "DelayedDataFrame", function (x, i, value) 
 {
-    ## browser()
-    xstub <- setNames(seq_along(x), names(x))
-    if (missing(j)) {  ## whole-column replacement
-        j <- normalizeSingleBracketSubscript(i, xstub)
-        lazyIndex(x) <- .update_index(lazyIndex(x), j, NULL)
-    } else {  ## row-col replacement
-        j <- normalizeSingleBracketSubscript(j, xstub)
-        x@listData[j] <- lapply(j, function(j, x) x[[j]], x)
-        lazyIndex(x) <- .update_index(lazyIndex(x), j, NULL)
+    nsbs <- normalizeSingleBracketSubscript(i, x, allow.append = TRUE, 
+                                            as.NSBS = TRUE)
+    if (length(nsbs) == 0L) {
+        return(x)
     }
-    callNextMethod()
-    
+    x <- S4Vectors:::.subassign_columns(x, nsbs, value)
+    lazyIndex(x) <- .update_index(lazyIndex(x), i, NULL)
+    i_max <- max(as.integer(nsbs))
+    x_nrow <- nrow(x)
+    if (i_max > x_nrow) {
+        x@rownames <- .make_rownames(x, i, nsbs, value)
+        x@nrows <- i_max
+    }
+    x
 })
 
 #' @rdname DelayedDataFrame-method

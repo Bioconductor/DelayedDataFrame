@@ -10,9 +10,6 @@
 \alias{extractROWS,DelayedDataFrame-method}
 \alias{extractCOLS,DelayedDataFrame-method}
 \alias{replaceCOLS,DelayedDataFrame-method}
-\alias{[<-,DelayedDataFrame,ANY,ANY,ANY-method}
-\alias{"[<-"}
-\alias{"[<-,DelayedDataFrame-method"}
 \alias{[,DelayedDataFrame,ANY,ANY,ANY-method}
 \alias{"["}
 \alias{"[,DelayedDataFrame-method"}
@@ -32,8 +29,6 @@
 \S4method{extractCOLS}{DelayedDataFrame}(x, i)
 
 \S4method{replaceCOLS}{DelayedDataFrame}(x, i, value)
-
-\S4method{[}{DelayedDataFrame,ANY,ANY,ANY}(x, i, j, ...) <- value
 
 \S4method{[}{DelayedDataFrame,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
 }
@@ -72,9 +67,6 @@ into \code{bindROWS}.}
 \item{j}{col subscript}
 
 \item{drop}{if drop with reduced dimension, default is TRUE.}
-
-\item{value}{the new values in the \code{i,j} subscripts of
-\code{DelayedDataFrame} object.}
 }
 \value{
 colnames of \code{DelayedDataFrame}

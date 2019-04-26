@@ -142,7 +142,8 @@ test_that("[<-,DelayedDataFrame 2-D subseting works", {
     da0 <- DelayedArray(array(1:26, 26))
     obj <- DelayedDataFrame(letters, da0 = I(da0))
 
-    obj[1:5, 1] <- rev(letters[1:5])
+    ## subset-replace non-DelayedArray column
+    obj[1:5, 1] <- rev(letters[1:5])   ## FIXME
     expect_identical(rev(letters[1:5]), obj[[1]][1:5])
     nullList <- .LazyIndex(vector("list", 1), index=rep(1L, length(obj)))
     expect_identical(nullList, lazyIndex(obj))
@@ -156,7 +157,7 @@ test_that("[<-,DelayedDataFrame 2-D subseting works", {
 
     obj <- DelayedDataFrame(letters, da0 = I(da0))
     obj <- obj[10:1,]
-    obj["da0"] <- da0[sample(10)]
+    obj["da0"] <- da0[sample(10), drop=FALSE]
     exp <- .LazyIndex(list(10:1, NULL), index=1:2)
     expect_identical(exp, lazyIndex(obj))
 
@@ -182,14 +183,10 @@ test_that("[[<-,DelayedDataFrame is correct", {
     ## .append_list_element
     obj <- DelayedDataFrame(letters, da0 = I(da0))
     obj0 <- obj <- obj[1:10,]
-    obj[["x"]] <- da0[1:10]  ## FIXME: warning message.
-    ## Warning message:
-    ## In methods:::.selectDotsMethod(classes, .MTable, .AllMTable) :
-    ##   multiple direct matches: "DelayedDataFrame", "DataFrame"; using the first of these
+    obj[["x"]] <- da0[1:10]
 
-    ## exp <- .LazyIndex(list(1:10, NULL), index = c(1L, 1L, 2L))
-    ## expect_identical(exp, lazyIndex(obj))
-    ## FIXME: the new constructed obj should have nullList here.
+    exp <- .LazyIndex(list(1:10, NULL), index = c(1L, 1L, 2L))
+    expect_identical(exp, lazyIndex(obj))
 
     exp <- .LazyIndex(list(1:10), index = c(1L, 1L))
     expect_identical(exp, obj0@lazyIndex)
@@ -217,7 +214,10 @@ test_that("[[<-,DelayedDataFrame is correct", {
 
     obj <- DelayedDataFrame(letters, da0 = I(da0))
     obj <- obj[10:1,]
-    obj[["da0"]] <- da0[sample(10)]
+    obj[["da0"]] <- da0[sample(10)]  ## FIXME:
+    ## Error in DataFrame(listData, row.names = rownames(from)) : 
+    ## cannot coerce class "list" to a DataFrame
+
     exp <- .LazyIndex(list(10:1, NULL), index=1:2)
     expect_identical(exp, lazyIndex(obj))
 })
