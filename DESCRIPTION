@@ -1,12 +1,12 @@
 Package: DelayedDataFrame
 Title: Delayed operation on DataFrame using standard DataFrame metaphor
-Version: 0.99.11
+Version: 0.99.12
 Authors@R: c(
     person(
         "Qian", "Liu", email = "Qian.Liu@roswellpark.org", role=c("aut", "cre")
     ),
-    person("Hervé",  "Pagès", role = "ctb"),
-    person("Martin", "Morgan", role = "ctb"))
+    person("Hervé",  "Pagès", role = "aut"),
+    person("Martin", "Morgan", role = "aut"))
 Description: Based on the standard DataFrame metaphor, we are trying
     to implement the feature of delayed operation on the
     DelayedDataFrame, with a slot of lazyIndex, which saves the

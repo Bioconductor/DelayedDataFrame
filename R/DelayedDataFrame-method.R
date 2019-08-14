@@ -153,6 +153,19 @@ setMethod("extractROWS", "DelayedDataFrame",
     x
 }
 
+setMethod("replaceROWS", c("DataFrame", "ANY"), 
+          function (x, i, value)
+{
+    ## browser()
+    nsbs <- normalizeSingleBracketSubscript(i, x, as.NSBS = TRUE)
+    if (length(nsbs) == 0L) {
+        return(x)
+    }
+    x <- S4Vectors:::.subassign_columns(x, nsbs, value)
+    lazyIndex(x) <- .update_index(lazyIndex(x), i, NULL)
+    x
+})
+
 #' @aliases extractCOLS,DelayedDataFrame-method
 #' @rdname DelayedDataFrame-method
 #' @export
@@ -165,7 +178,9 @@ setMethod("extractCOLS", "DelayedDataFrame",
 #'     \code{DelayedDataFrame} object.
 #' @export
 
-setMethod("replaceCOLS", c("DelayedDataFrame", "ANY"), function(x, i, value) {
+setMethod("replaceCOLS", c("DelayedDataFrame", "ANY"),
+          function(x, i, value)
+{
     stopifnot(is.null(value) || is(value, "DataFrame"))
     if (!is(i, "IntegerRanges")) {
         xstub <- setNames(seq_along(x), names(x))
@@ -226,7 +241,7 @@ setMethod(mergeROWS, "DelayedDataFrame", function (x, i, value)
     i_max <- max(as.integer(nsbs))
     x_nrow <- nrow(x)
     if (i_max > x_nrow) {
-        x@rownames <- .make_rownames(x, i, nsbs, value)
+        x@rownames <- S4Vectors:::.make_rownames(x, i, nsbs, value)
         x@nrows <- i_max
     }
     x
