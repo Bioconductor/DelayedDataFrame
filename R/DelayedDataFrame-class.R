@@ -21,7 +21,7 @@
 #' 
 .DelayedDataFrame <- setClass(
     "DelayedDataFrame",
-    contains = "DataFrame",
+    contains = "DFrame",
     slots = c(lazyIndex = "LazyIndex")
 )
 
