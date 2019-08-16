@@ -59,7 +59,7 @@ so that they are.}
     new value of \code{lazyIndex} slot.
 }
 \description{
-The \code{DelayedDataFrame} class extends the
+The \code{DelayedDataFrame} class indirectly extends the
     \code{DataFrame} class and supports the storage of any type of
     object (with ‘length’ and ‘[’ methods) as columns.
 
@@ -73,7 +73,7 @@ the coercion method between \code{DataFrame} and
 The \code{DelayedDataFrame} inherits from \code{DataFrame}
     and behaves very similarily in terms of construction,
     subsetting, splitting, combining, etc. The most notable
-    exception is that The additional slot of \code{lazyIndex},
+    exception is that the additional slot of \code{lazyIndex},
     enables \code{DelayedArray} (with different back-ends) columns
     to share indexes when possible.
 
@@ -89,5 +89,4 @@ DDF1 <- DDF[1:10,]
 DDF1
 lazyIndex(DDF1)
 as(DDF1, "DataFrame")
-
 }
