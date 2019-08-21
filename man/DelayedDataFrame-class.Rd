@@ -10,6 +10,8 @@
 \alias{lazyIndex,DelayedDataFrame}
 \alias{coerce}
 \alias{coerce,DataFrame,DelayedDataFrame-method}
+\alias{coerce,DFrame,DelayedDataFrame-method}
+\alias{coerce,DelayedDataFrame,DFrame-method}
 \alias{coerce,DelayedDataFrame,DataFrame-method}
 \alias{coerce,ANY,DelayedDataFrame-method}
 \alias{lazyIndex<-}

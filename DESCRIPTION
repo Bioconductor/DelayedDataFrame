@@ -1,6 +1,6 @@
 Package: DelayedDataFrame
 Title: Delayed operation on DataFrame using standard DataFrame metaphor
-Version: 1.1.1
+Version: 1.1.2
 Authors@R: c(
     person(
         "Qian", "Liu", email = "Qian.Liu@roswellpark.org", role=c("aut", "cre")
@@ -18,7 +18,7 @@ Description: Based on the standard DataFrame metaphor, we are trying
 biocViews: Infrastructure, DataRepresentation
 Depends:
     R (>= 3.6),
-    S4Vectors (>= 0.23.18),
+    S4Vectors (>= 0.23.19),
     DelayedArray (>= 0.7.5)
 License: GPL-3
 Encoding: UTF-8

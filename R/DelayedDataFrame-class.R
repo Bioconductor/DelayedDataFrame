@@ -105,31 +105,32 @@ setMethod("lazyIndex", "DelayedDataFrame", function(x) x@lazyIndex)
 
 #' @name coerce
 #' @rdname DelayedDataFrame-class
-#' @aliases coerce,DataFrame,DelayedDataFrame-method
+#' @aliases coerce,DataFrame,DelayedDataFrame-method coerce,DFrame,DelayedDataFrame-method
 #' @description the coercion method between \code{DataFrame} and
 #'     \code{DelayedDataFrame} objects.
 #' @param from the object to be converted.
 #' @export
 
-setAs("DataFrame", "DelayedDataFrame", function(from)
+.from_DataFrame_to_DelayedDataFrame <- function(from)
 {
     ldf <- length(from)
     lazyIndex <- .LazyIndex(vector("list", as.numeric(as.logical(ldf))),
                             index=rep(1L, ldf))
     .DelayedDataFrame(from, lazyIndex = lazyIndex)
     
-})
+}
+setAs("DataFrame", "DelayedDataFrame", .from_DataFrame_to_DelayedDataFrame)
+setAs("DFrame", "DelayedDataFrame", .from_DataFrame_to_DelayedDataFrame)
 
 #' @rdname DelayedDataFrame-class
-#' @aliases coerce,DelayedDataFrame,DataFrame-method
+#' @aliases coerce,DelayedDataFrame,DFrame-method coerce,DelayedDataFrame,DataFrame-method
 #' @param to the class of object to be returned by coercion.
 #' @param strict Logical. Whether to force return a \code{DataFrame}. 
 #' @export
 
-setMethod("coerce", c("DelayedDataFrame", "DataFrame"),
-          function(from, to="DataFrame", strict=TRUE)
+.from_DelayedDataFrame_to_DFrame <- function(from, to="DFrame", strict=TRUE)
 {
-    if (!strict && is(from, "DataFrame")) {
+    if (!strict && is(from, "DFrame")) {
         return(from)
     } else {
         listData <- as.list(from)
@@ -138,6 +139,11 @@ setMethod("coerce", c("DelayedDataFrame", "DataFrame"),
         DataFrame(listData, row.names = rownames(from))
     }
 }
+setMethod("coerce", c("DelayedDataFrame", "DFrame"),
+    .from_DelayedDataFrame_to_DFrame
+)
+setMethod("coerce", c("DelayedDataFrame", "DataFrame"),
+    .from_DelayedDataFrame_to_DFrame
 )
 
 #' @name coerce
