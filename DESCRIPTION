@@ -1,6 +1,6 @@
 Package: DelayedDataFrame
 Title: Delayed operation on DataFrame using standard DataFrame metaphor
-Version: 1.3.1
+Version: 1.4.0
 Authors@R: c(
     person(
         "Qian", "Liu", email = "Qian.Liu@roswellpark.org", role=c("aut", "cre")
