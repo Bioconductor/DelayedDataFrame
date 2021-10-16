@@ -7,7 +7,7 @@ author:
   affiliation: Fred Hutchinson Cancer Research Center, Seattle, WA
 - name: Martin Morgan
   affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
-date: "last edit: 07/22/2018"
+date: "last edit: 10/15/2021"
 output:
     BiocStyle::html_document:
         toc: true
@@ -112,15 +112,15 @@ GDS node name inside the GDS file.
 library(GDSArray)
 file <- SeqArray::seqExampleFileName("gds")
 gdsnodes(file)
-varid <- GDSArray(file, "annotation/id")
-AA <- GDSArray(file, "annotation/info/AA")
+varid <- GDSArray(file, "annotation/id")  
+DP <- GDSArray(file, "annotation/info/DP")
 ```
 
 We use an ordinary character vector and the `GDSArray` objects to
 construct a `DelayedDataFrame` object.
 
 ```{r, construction}
-ddf <- DelayedDataFrame(varid, AA)
+ddf <- DelayedDataFrame(varid, DP)  ## only accommodate 1D GDSArrays with same length
 ```
 
 ## slot accessors
@@ -236,7 +236,7 @@ ddf[, 1, drop=FALSE]
 - character subscripts (column names).
 
 ```{r, singleSB2}
-ddf[, "AA", drop=FALSE]
+ddf[, "DP", drop=FALSE]
 ```
 
 - logical subscripts. 
@@ -284,7 +284,7 @@ lazyIndex(ddfrb)
 `DelayedDataFrame` object.
 
 ```{r, cbind, error=FALSE}
-(ddfcb <- cbind(varid = ddf1[,1, drop=FALSE], AA=ddf1[, 2, drop=FALSE]))
+(ddfcb <- cbind(varid = ddf1[,1, drop=FALSE], DP=ddf1[, 2, drop=FALSE]))
 lazyIndex(ddfcb)
 ```
 
